@@ -152,6 +152,8 @@ public class HunterTests
     [InlineData(StatCategory.Physique)]
     [InlineData(StatCategory.Looks)]
     [InlineData(StatCategory.WellBeing)]
+    [InlineData(StatCategory.Intelligence)]
+    [InlineData(StatCategory.Charisma)]
     public void IncreaseStat_Should_IncreaseTheTargetedStat(StatCategory category)
     {
         Hunter hunter = CreateHunter();
@@ -197,6 +199,8 @@ public class HunterTests
         StatCategory.Physique => hunter.Physique,
         StatCategory.Looks => hunter.Looks,
         StatCategory.WellBeing => hunter.WellBeing,
+        StatCategory.Intelligence => hunter.Intelligence,
+        StatCategory.Charisma => hunter.Charisma,
         _ => throw new ArgumentOutOfRangeException(nameof(category)),
     };
 }

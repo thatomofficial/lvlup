@@ -41,6 +41,10 @@ public sealed class Hunter : Entity
 
     public int WellBeing { get; private set; }
 
+    public int Intelligence { get; private set; }
+
+    public int Charisma { get; private set; }
+
     public DateTime CreatedAtUtc { get; private set; }
 
     public int XpForNextLevel => Level * XpPerLevelFactor;
@@ -82,6 +86,8 @@ public sealed class Hunter : Entity
         Physique = BaseStatValue,
         Looks = BaseStatValue,
         WellBeing = BaseStatValue,
+        Intelligence = BaseStatValue,
+        Charisma = BaseStatValue,
         CreatedAtUtc = utcNow,
     };
 
@@ -138,6 +144,12 @@ public sealed class Hunter : Entity
                 break;
             case StatCategory.WellBeing:
                 WellBeing += amount;
+                break;
+            case StatCategory.Intelligence:
+                Intelligence += amount;
+                break;
+            case StatCategory.Charisma:
+                Charisma += amount;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category.");

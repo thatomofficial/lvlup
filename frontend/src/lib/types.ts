@@ -5,7 +5,9 @@ export type QuestCategory =
   | 'Stamina'
   | 'Physique'
   | 'Looks'
-  | 'WellBeing';
+  | 'WellBeing'
+  | 'Intelligence'
+  | 'Charisma';
 
 export type QuestDifficulty = 'Easy' | 'Medium' | 'Hard' | 'Elite';
 
@@ -17,6 +19,8 @@ export interface HunterStats {
   physique: number;
   looks: number;
   wellBeing: number;
+  intelligence: number;
+  charisma: number;
 }
 
 export type DisplayNamePreference = 'FullName' | 'Username';

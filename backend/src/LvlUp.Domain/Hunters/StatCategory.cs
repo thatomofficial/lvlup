@@ -7,4 +7,6 @@ public enum StatCategory
     Physique = 2,
     Looks = 3,
     WellBeing = 4,
+    Intelligence = 5,
+    Charisma = 6,
 }

@@ -25,6 +25,8 @@ const CATEGORIES: readonly QuestCategory[] = [
   'Physique',
   'Looks',
   'WellBeing',
+  'Intelligence',
+  'Charisma',
 ];
 const DIFFICULTIES: readonly QuestDifficulty[] = [
   'Easy',

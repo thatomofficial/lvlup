@@ -161,6 +161,14 @@ export default function StatusScreen() {
                 label={categoryLabels.WellBeing}
                 value={hunter.stats.wellBeing}
               />
+              <StatRow
+                label={categoryLabels.Intelligence}
+                value={hunter.stats.intelligence}
+              />
+              <StatRow
+                label={categoryLabels.Charisma}
+                value={hunter.stats.charisma}
+              />
             </GlowPanel>
           </>
         ) : (

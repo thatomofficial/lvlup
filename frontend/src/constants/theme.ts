@@ -30,6 +30,8 @@ export const categoryLabels: Record<QuestCategory, string> = {
   Physique: 'Physique',
   Looks: 'Looks',
   WellBeing: 'Well-Being',
+  Intelligence: 'Intelligence',
+  Charisma: 'Charisma',
 };
 
 export const fonts = {

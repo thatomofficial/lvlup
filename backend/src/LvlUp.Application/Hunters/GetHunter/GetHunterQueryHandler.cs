@@ -39,7 +39,9 @@ internal sealed class GetHunterQueryHandler(IApplicationDbContext context)
                 hunter.Stamina,
                 hunter.Physique,
                 hunter.Looks,
-                hunter.WellBeing),
+                hunter.WellBeing,
+                hunter.Intelligence,
+                hunter.Charisma),
         };
     }
 }

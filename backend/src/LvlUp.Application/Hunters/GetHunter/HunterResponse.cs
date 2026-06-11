@@ -2,7 +2,14 @@ using LvlUp.Domain.Hunters;
 
 namespace LvlUp.Application.Hunters.GetHunter;
 
-public sealed record HunterStatsResponse(int Strength, int Stamina, int Physique, int Looks, int WellBeing);
+public sealed record HunterStatsResponse(
+    int Strength,
+    int Stamina,
+    int Physique,
+    int Looks,
+    int WellBeing,
+    int Intelligence,
+    int Charisma);
 
 public sealed record HunterResponse
 {
