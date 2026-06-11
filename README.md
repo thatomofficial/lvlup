@@ -98,6 +98,16 @@ npm test             # Jest (29 tests)
 npm run typecheck    # tsc --noEmit
 ```
 
+### Branding assets
+
+The logo masters are SVGs in `frontend/assets/` (`logo.svg`, `adaptive-icon.svg`,
+`splash-icon.svg`). The PNGs Expo consumes (app icon, Android adaptive icon, splash image,
+favicon) are generated from them — after editing an SVG, run:
+
+```powershell
+npm run generate-assets
+```
+
 ## Environments
 
 ### Backend
