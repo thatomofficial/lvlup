@@ -1,0 +1,5 @@
+# Test-specific relaxations (inherits from backend/.editorconfig).
+[*.cs]
+dotnet_diagnostic.CA1707.severity = none   # Underscores: Method_Should_Behavior test naming convention.
+dotnet_diagnostic.CA2000.severity = none   # Dispose: DbContext lifetime is managed by test fixtures.
+dotnet_diagnostic.CA1001.severity = none   # Disposable fields: xUnit manages fixture lifetime via IDisposable tests.

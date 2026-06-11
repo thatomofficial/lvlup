@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\LvlUp.SharedKernel\LvlUp.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

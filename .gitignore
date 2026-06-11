@@ -1,0 +1,21 @@
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/.vs/
+*.user
+
+# Node / Expo
+frontend/node_modules/
+frontend/.env*.local
+frontend/.expo/
+frontend/dist/
+frontend/web-build/
+frontend/coverage/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+#vscode
+.history/

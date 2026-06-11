@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LvlUp.Api/LvlUp.Api.csproj" />
+    <Project Path="src/LvlUp.Application/LvlUp.Application.csproj" />
+    <Project Path="src/LvlUp.Domain/LvlUp.Domain.csproj" />
+    <Project Path="src/LvlUp.Infrastructure/LvlUp.Infrastructure.csproj" />
+    <Project Path="src/LvlUp.SharedKernel/LvlUp.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LvlUp.ArchitectureTests/LvlUp.ArchitectureTests.csproj" />
+    <Project Path="tests/LvlUp.UnitTests/LvlUp.UnitTests.csproj" />
+  </Folder>
+</Solution>

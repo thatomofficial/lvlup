@@ -1,0 +1,39 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,props,targets,csproj}]
+indent_size = 2
+
+[*.cs]
+# Pragmatic relaxations of AnalysisMode=All for an application (non-library) codebase.
+dotnet_diagnostic.CA1000.severity = none   # Static members on generic types: Result<T> factory methods are idiomatic.
+dotnet_diagnostic.CA1030.severity = none   # "Use events": Raise() is the domain-event pattern, not a .NET event.
+dotnet_diagnostic.CA1031.severity = none   # Catch general exceptions: required in the global exception handler.
+dotnet_diagnostic.CA1034.severity = none   # Nested types: decorators are intentionally grouped in static classes.
+dotnet_diagnostic.CA1040.severity = none   # Empty interfaces: ICommand/IQuery/IDomainEvent are CQRS markers.
+dotnet_diagnostic.CA1062.severity = none   # Public-arg null checks: nullable reference types are enforced instead.
+dotnet_diagnostic.CA1303.severity = none   # Literal localization: not a localized application.
+dotnet_diagnostic.CA1308.severity = none   # ToLowerInvariant: emails are stored lowercase by design.
+dotnet_diagnostic.CA1515.severity = none   # "Make types internal": DI/composition entry points must stay public.
+dotnet_diagnostic.CA1711.severity = none   # Suffix rules: IDomainEventHandler is the DDD naming convention.
+dotnet_diagnostic.CA1716.severity = none   # Reserved keywords: 'Error' is the canonical Result-pattern type name.
+dotnet_diagnostic.CA1724.severity = none   # Name/namespace conflicts: DependencyInjection composition classes.
+dotnet_diagnostic.CA1812.severity = none   # "Internal class never instantiated": handlers/endpoints created via DI.
+dotnet_diagnostic.CA1848.severity = none   # LoggerMessage delegates: not needed at this throughput.
+dotnet_diagnostic.CA1873.severity = none   # Lazy log-argument evaluation: arguments here are cheap locals.
+dotnet_diagnostic.CA2007.severity = none   # ConfigureAwait: ASP.NET Core has no SynchronizationContext.
+dotnet_diagnostic.CA2225.severity = none   # Operator named alternates: implicit Result<T> conversion is intentional.
+dotnet_diagnostic.S1144.severity = none    # Unused private ctor: EF Core materialization requires it.
+dotnet_diagnostic.S2326.severity = none    # "Unused" type params: TResponse on ICommand/IQuery drives handler binding.
+
+# EF Core migrations are generated code — exempt from analysis.
+[**/Migrations/**.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.S4023.severity = none    # Empty interfaces: CQRS marker interfaces.
