@@ -1,0 +1,53 @@
+name: CI (gated)
+
+on:
+  pull_request:
+    branches: [dev, qa, main]
+
+concurrency:
+  group: gated-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend build & tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build (warnings are errors)
+        run: dotnet build LvlUp.slnx --configuration Release
+
+      - name: Test (architecture + unit)
+        run: dotnet test LvlUp.slnx --configuration Release --no-build
+
+  frontend:
+    name: Frontend typecheck & tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npx jest --ci

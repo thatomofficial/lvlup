@@ -1,0 +1,151 @@
+name: CI (build)
+
+on:
+  push:
+    branches: [dev, qa, main]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HAS_EXPO_TOKEN: ${{ secrets.EXPO_TOKEN != '' }}
+
+jobs:
+  resolve:
+    name: Map branch to environment
+    runs-on: ubuntu-latest
+    outputs:
+      app_env: ${{ steps.map.outputs.app_env }}
+      api_env: ${{ steps.map.outputs.api_env }}
+      build_mode: ${{ steps.map.outputs.build_mode }}
+      eas_profile: ${{ steps.map.outputs.eas_profile }}
+      api_url: ${{ steps.map.outputs.api_url }}
+    steps:
+      - id: map
+        env:
+          DEV_API_URL: ${{ vars.DEV_API_URL || 'https://dev-api.lvlup.example.com' }}
+          STAGING_API_URL: ${{ vars.STAGING_API_URL || 'https://staging-api.lvlup.example.com' }}
+          PRODUCTION_API_URL: ${{ vars.PRODUCTION_API_URL || 'https://api.lvlup.example.com' }}
+        run: |
+          case "$GITHUB_REF_NAME" in
+            dev)
+              echo "app_env=development"      >> "$GITHUB_OUTPUT"
+              echo "api_env=Development"      >> "$GITHUB_OUTPUT"
+              echo "build_mode=debug-apk"     >> "$GITHUB_OUTPUT"
+              echo "eas_profile=development"  >> "$GITHUB_OUTPUT"
+              echo "api_url=$DEV_API_URL"     >> "$GITHUB_OUTPUT"
+              ;;
+            qa)
+              echo "app_env=qa"               >> "$GITHUB_OUTPUT"
+              echo "api_env=Staging"          >> "$GITHUB_OUTPUT"
+              echo "build_mode=eas"           >> "$GITHUB_OUTPUT"
+              echo "eas_profile=staging"      >> "$GITHUB_OUTPUT"
+              echo "api_url=$STAGING_API_URL" >> "$GITHUB_OUTPUT"
+              ;;
+            main)
+              echo "app_env=production"          >> "$GITHUB_OUTPUT"
+              echo "api_env=Production"          >> "$GITHUB_OUTPUT"
+              echo "build_mode=eas"              >> "$GITHUB_OUTPUT"
+              echo "eas_profile=production"      >> "$GITHUB_OUTPUT"
+              echo "api_url=$PRODUCTION_API_URL" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported branch: $GITHUB_REF_NAME" >&2
+              exit 1
+              ;;
+          esac
+
+  backend:
+    name: API — build, test, publish (${{ needs.resolve.outputs.api_env }})
+    runs-on: ubuntu-latest
+    needs: resolve
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build (warnings are errors)
+        run: dotnet build LvlUp.slnx --configuration Release
+
+      - name: Test (architecture + unit)
+        run: dotnet test LvlUp.slnx --configuration Release --no-build
+
+      - name: Publish API
+        run: dotnet publish src/LvlUp.Api --configuration Release --no-build --output publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lvlup-api-${{ needs.resolve.outputs.api_env }}
+          path: backend/publish
+          retention-days: 14
+
+  frontend:
+    name: App — ${{ needs.resolve.outputs.build_mode }} (${{ needs.resolve.outputs.app_env }})
+    runs-on: ubuntu-latest
+    needs: resolve
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      EXPO_PUBLIC_API_URL: ${{ needs.resolve.outputs.api_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npx jest --ci
+
+      # dev branch: installable debug APK built on the runner (no EAS account needed).
+      - uses: actions/setup-java@v4
+        if: needs.resolve.outputs.build_mode == 'debug-apk'
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Prebuild Android project
+        if: needs.resolve.outputs.build_mode == 'debug-apk'
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build debug APK
+        if: needs.resolve.outputs.build_mode == 'debug-apk'
+        working-directory: frontend/android
+        run: ./gradlew :app:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        if: needs.resolve.outputs.build_mode == 'debug-apk'
+        with:
+          name: lvlup-app-${{ needs.resolve.outputs.app_env }}-debug-apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      # qa / main branches: cloud build via EAS using the matching eas.json profile.
+      - uses: expo/expo-github-action@v8
+        if: needs.resolve.outputs.build_mode == 'eas' && env.HAS_EXPO_TOKEN == 'true'
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: EAS build (Android)
+        if: needs.resolve.outputs.build_mode == 'eas' && env.HAS_EXPO_TOKEN == 'true'
+        run: eas build --platform android --profile ${{ needs.resolve.outputs.eas_profile }} --non-interactive --no-wait
+
+      - name: EAS build skipped
+        if: needs.resolve.outputs.build_mode == 'eas' && env.HAS_EXPO_TOKEN != 'true'
+        run: echo "::warning::EXPO_TOKEN secret is not configured - skipping EAS build for profile '${{ needs.resolve.outputs.eas_profile }}'. Add the secret to enable cloud builds."

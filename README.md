@@ -139,6 +139,25 @@ platform-aware localhost default in `src/constants/api.ts` (`10.0.2.2:5180` on A
 physical-device testing). The committed `.env` files contain no secrets — only public URLs.
 Replace the `lvlup.example.com` placeholders with real origins when you have them.
 
+## CI (GitHub Actions)
+
+Branching model: feature work → `dev` → `qa` → `main`.
+
+- **`ci-gated.yml`** — on PRs to `dev`/`qa`/`main`: backend build (warnings are errors) + tests,
+  frontend typecheck + Jest.
+- **`ci-build.yml`** — on push to those branches, branch-driven:
+
+| Branch | App env | API artifact | App build |
+| --- | --- | --- | --- |
+| `dev` | development | `lvlup-api-Development` | Debug APK built on the runner (no EAS account needed) |
+| `qa` | qa | `lvlup-api-Staging` | EAS build, `staging` profile |
+| `main` | production | `lvlup-api-Production` | EAS build, `production` profile |
+
+Repo configuration (Settings → Secrets and variables → Actions):
+- Secret `EXPO_TOKEN` — enables the EAS builds on `qa`/`main` (skipped with a warning if absent).
+- Variables `DEV_API_URL`, `STAGING_API_URL`, `PRODUCTION_API_URL` — override the placeholder API
+  origins baked into app builds.
+
 ## API
 
 Base URL `http://localhost:5180`. Errors are RFC 7807 problem details; validation failures include
