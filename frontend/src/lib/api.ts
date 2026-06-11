@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   CompleteQuestResult,
   CreateQuestRequest,
+  DisplayNamePreference,
   Hunter,
   Quest,
 } from './types';
@@ -94,7 +95,7 @@ export class ApiError extends Error {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
   token?: string | null;
 }
@@ -136,10 +137,16 @@ async function request<T>(
 }
 
 export const api = {
-  register(email: string, password: string, name: string): Promise<AuthResponse> {
+  register(
+    email: string,
+    password: string,
+    name: string,
+    surname: string,
+    username: string,
+  ): Promise<AuthResponse> {
     return request<AuthResponse>('/auth/register', {
       method: 'POST',
-      body: { email, password, name },
+      body: { email, password, name, surname, username },
     });
   },
 
@@ -152,6 +159,17 @@ export const api = {
 
   getMe(token: string): Promise<Hunter> {
     return request<Hunter>('/hunters/me', { token });
+  },
+
+  updateDisplayPreference(
+    token: string,
+    preference: DisplayNamePreference,
+  ): Promise<void> {
+    return request<void>('/hunters/me/display-preference', {
+      method: 'PUT',
+      body: { preference },
+      token,
+    });
   },
 
   getQuests(token: string): Promise<Quest[]> {

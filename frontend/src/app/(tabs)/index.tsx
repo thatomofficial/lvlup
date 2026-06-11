@@ -15,12 +15,15 @@ import { RankBadge } from '../../components/RankBadge';
 import { StatRow } from '../../components/StatRow';
 import { XpBar } from '../../components/XpBar';
 import { categoryLabels, colors } from '../../constants/theme';
+import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import type { DisplayNamePreference } from '../../lib/types';
 
 /** Tab 1 — the Solo Leveling style STATUS WINDOW. */
 export default function StatusScreen() {
-  const { hunter, refreshHunter, signOut } = useAuth();
+  const { token, hunter, refreshHunter, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [savingPreference, setSavingPreference] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -30,6 +33,24 @@ export default function StatusScreen() {
       setRefreshing(false);
     }
   }, [refreshHunter]);
+
+  const changeDisplayPreference = useCallback(
+    async (preference: DisplayNamePreference) => {
+      if (!token || !hunter || hunter.displayNamePreference === preference) {
+        return;
+      }
+      setSavingPreference(true);
+      try {
+        await api.updateDisplayPreference(token, preference);
+        await refreshHunter();
+      } catch {
+        // Leave the previous preference in place; pull-to-refresh re-syncs.
+      } finally {
+        setSavingPreference(false);
+      }
+    },
+    [token, hunter, refreshHunter],
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -65,9 +86,11 @@ export default function StatusScreen() {
                 <RankBadge rank={hunter.rank} />
                 <View style={styles.identityInfo}>
                   <Text style={styles.hunterName} numberOfLines={1}>
-                    {hunter.name}
+                    {hunter.displayName}
                   </Text>
-                  <Text style={styles.hunterTitle}>HUNTER</Text>
+                  <Text style={styles.hunterTitle}>
+                    HUNTER · @{hunter.username}
+                  </Text>
                   <View style={styles.levelRow}>
                     <Text style={styles.levelLabel}>LV.</Text>
                     <Text style={styles.levelValue}>{hunter.level}</Text>
@@ -83,6 +106,39 @@ export default function StatusScreen() {
                 <Text style={styles.totalXp}>
                   TOTAL XP: {hunter.totalXp}
                 </Text>
+              </View>
+
+              <View style={styles.displayRow}>
+                <Text style={styles.displayLabel}>DISPLAY</Text>
+                {(
+                  [
+                    { value: 'FullName', label: 'FULL NAME' },
+                    { value: 'Username', label: 'USERNAME' },
+                  ] as const
+                ).map((option) => {
+                  const selected = hunter.displayNamePreference === option.value;
+                  return (
+                    <Pressable
+                      key={option.value}
+                      onPress={() => changeDisplayPreference(option.value)}
+                      disabled={savingPreference}
+                      style={[
+                        styles.displayOption,
+                        selected && styles.displayOptionSelected,
+                      ]}
+                      accessibilityState={{ selected }}
+                    >
+                      <Text
+                        style={[
+                          styles.displayOptionText,
+                          selected && styles.displayOptionTextSelected,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             </GlowPanel>
 
@@ -205,6 +261,39 @@ const styles = StyleSheet.create({
   },
   xpSection: {
     marginTop: 18,
+  },
+  displayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  displayLabel: {
+    color: colors.textDim,
+    fontSize: 10,
+    letterSpacing: 2,
+    fontWeight: '700',
+    marginRight: 4,
+  },
+  displayOption: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  displayOptionSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryDim,
+  },
+  displayOptionText: {
+    color: colors.textDim,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    fontWeight: '700',
+  },
+  displayOptionTextSelected: {
+    color: colors.primary,
   },
   totalXp: {
     color: colors.textDim,

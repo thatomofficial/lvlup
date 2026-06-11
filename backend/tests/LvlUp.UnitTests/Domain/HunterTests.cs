@@ -8,7 +8,7 @@ public class HunterTests
     private static readonly DateTime UtcNow = new(2026, 6, 11, 8, 0, 0, DateTimeKind.Utc);
 
     private static Hunter CreateHunter() =>
-        Hunter.Create("hunter@lvlup.app", "hash", "Sung Jin-Woo", UtcNow);
+        Hunter.Create("hunter@lvlup.app", "hash", "Jin-Woo", "Sung", "shadow_monarch", UtcNow);
 
     [Fact]
     public void Create_Should_StartAtLevelOne()
@@ -37,6 +37,33 @@ public class HunterTests
         Hunter hunter = CreateHunter();
 
         hunter.Rank.ShouldBe(HunterRank.E);
+    }
+
+    [Fact]
+    public void DisplayName_Should_BeFullName_ByDefault()
+    {
+        Hunter hunter = CreateHunter();
+
+        hunter.DisplayName.ShouldBe("Jin-Woo Sung");
+    }
+
+    [Fact]
+    public void DisplayName_Should_BeUsername_WhenPreferenceIsUsername()
+    {
+        Hunter hunter = CreateHunter();
+
+        hunter.SetDisplayNamePreference(DisplayNamePreference.Username);
+
+        hunter.DisplayName.ShouldBe("shadow_monarch");
+    }
+
+    [Fact]
+    public void SetDisplayNamePreference_Should_Throw_WhenPreferenceIsUnknown()
+    {
+        Hunter hunter = CreateHunter();
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
+            hunter.SetDisplayNamePreference((DisplayNamePreference)99));
     }
 
     [Fact]

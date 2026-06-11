@@ -24,6 +24,10 @@ internal sealed class GetHunterQueryHandler(IApplicationDbContext context)
         {
             Id = hunter.Id,
             Name = hunter.Name,
+            Surname = hunter.Surname,
+            Username = hunter.Username,
+            DisplayName = hunter.DisplayName,
+            DisplayNamePreference = hunter.DisplayNamePreference,
             Email = hunter.Email,
             Level = hunter.Level,
             CurrentXp = hunter.CurrentXp,

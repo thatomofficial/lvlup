@@ -52,7 +52,7 @@ migrations in `backend/src/LvlUp.Infrastructure/Database/Migrations/`. All table
 
 | Table | Columns | Notes |
 | --- | --- | --- |
-| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `level`, `current_xp`, `total_xp`, `strength`, `stamina`, `physique`, `looks`, `well_being` (int), `created_at_utc` (timestamptz) | One row per account |
+| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `surname` (varchar 50), `username` (varchar 30, unique, lowercase), `display_name_preference` (int enum: 0 FullName / 1 Username), `level`, `current_xp`, `total_xp`, `strength`, `stamina`, `physique`, `looks`, `well_being` (int), `created_at_utc` (timestamptz) | One row per account; display name is computed from the preference |
 | `lvlup.quests` | `id` (uuid PK), `hunter_id` (uuid FK → hunters, cascade delete, indexed), `title` (varchar 100), `description` (varchar 500, null), `category`, `difficulty`, `type` (int enums), `created_at_utc`, `last_completed_at_utc` (timestamptz, null) | Daily completion state derives from `last_completed_at_utc` |
 | `lvlup.quest_completions` | `id` (uuid PK), `quest_id`, `hunter_id` (uuid, indexed), `category`, `xp_awarded`, `stat_awarded` (int), `completed_at_utc` (timestamptz) | Append-only history; intentionally no FK to quests so it survives quest deletion |
 
@@ -175,9 +175,10 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 
 | Method | Route | Auth | Description |
 | --- | --- | --- | --- |
-| POST | `/auth/register` | — | `{ email, password, name }` → `{ token, hunterId }` |
+| POST | `/auth/register` | — | `{ email, password, name, surname, username }` → `{ token, hunterId }` |
 | POST | `/auth/login` | — | `{ email, password }` → `{ token, hunterId }` |
-| GET | `/hunters/me` | ✓ | Hunter status: level, XP, rank, five stats |
+| GET | `/hunters/me` | ✓ | Hunter status: names, displayName, level, XP, rank, five stats |
+| PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |
 | GET | `/quests` | ✓ | All quests with computed `isCompleted` |
 | POST | `/quests` | ✓ | `{ title, description?, category, difficulty, type }` → `{ id }` |
 | POST | `/quests/{id}/complete` | ✓ | Awards XP + stat; 409 if already completed |

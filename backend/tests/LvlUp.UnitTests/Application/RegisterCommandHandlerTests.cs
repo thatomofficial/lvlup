@@ -33,7 +33,7 @@ public sealed class RegisterCommandHandlerTests : IDisposable
     [Fact]
     public async Task HandleAsync_Should_CreateHunter_WhenEmailIsUnique()
     {
-        var command = new RegisterCommand("new@lvlup.app", "password123", "Jin-Woo");
+        RegisterCommand command = CreateCommand();
 
         await _handler.HandleAsync(command, CancellationToken.None);
 
@@ -43,7 +43,7 @@ public sealed class RegisterCommandHandlerTests : IDisposable
     [Fact]
     public async Task HandleAsync_Should_ReturnToken_WhenRegistrationSucceeds()
     {
-        var command = new RegisterCommand("new@lvlup.app", "password123", "Jin-Woo");
+        RegisterCommand command = CreateCommand();
 
         Result<AuthResponse> result = await _handler.HandleAsync(command, CancellationToken.None);
 
@@ -53,7 +53,7 @@ public sealed class RegisterCommandHandlerTests : IDisposable
     [Fact]
     public async Task HandleAsync_Should_NormalizeEmailToLowercase()
     {
-        var command = new RegisterCommand("New@LvlUp.App", "password123", "Jin-Woo");
+        RegisterCommand command = CreateCommand(email: "New@LvlUp.App");
 
         await _handler.HandleAsync(command, CancellationToken.None);
 
@@ -61,15 +61,43 @@ public sealed class RegisterCommandHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task HandleAsync_Should_ReturnConflict_WhenEmailAlreadyExists()
+    public async Task HandleAsync_Should_NormalizeUsernameToLowercase()
     {
-        var command = new RegisterCommand("taken@lvlup.app", "password123", "Jin-Woo");
+        RegisterCommand command = CreateCommand(username: "Shadow_Monarch");
+
         await _handler.HandleAsync(command, CancellationToken.None);
 
-        Result<AuthResponse> result = await _handler.HandleAsync(command, CancellationToken.None);
+        _context.Hunters.Single().Username.ShouldBe("shadow_monarch");
+    }
+
+    [Fact]
+    public async Task HandleAsync_Should_ReturnConflict_WhenEmailAlreadyExists()
+    {
+        await _handler.HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Result<AuthResponse> result = await _handler.HandleAsync(
+            CreateCommand(username: "other_hunter"),
+            CancellationToken.None);
 
         result.Error.ShouldBe(HunterErrors.EmailNotUnique);
     }
 
+    [Fact]
+    public async Task HandleAsync_Should_ReturnConflict_WhenUsernameAlreadyExists()
+    {
+        await _handler.HandleAsync(CreateCommand(), CancellationToken.None);
+
+        Result<AuthResponse> result = await _handler.HandleAsync(
+            CreateCommand(email: "other@lvlup.app"),
+            CancellationToken.None);
+
+        result.Error.ShouldBe(HunterErrors.UsernameNotUnique);
+    }
+
     public void Dispose() => _context.Dispose();
+
+    private static RegisterCommand CreateCommand(
+        string email = "new@lvlup.app",
+        string username = "shadow_monarch") =>
+        new(email, "password123", "Jin-Woo", "Sung", username);
 }

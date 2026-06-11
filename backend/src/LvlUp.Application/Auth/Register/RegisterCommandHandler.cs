@@ -17,16 +17,24 @@ internal sealed class RegisterCommandHandler(
     public async Task<Result<AuthResponse>> HandleAsync(RegisterCommand command, CancellationToken cancellationToken)
     {
         string email = command.Email.Trim().ToLowerInvariant();
+        string username = command.Username.Trim().ToLowerInvariant();
 
         if (await context.Hunters.AnyAsync(hunter => hunter.Email == email, cancellationToken))
         {
             return Result.Failure<AuthResponse>(HunterErrors.EmailNotUnique);
         }
 
+        if (await context.Hunters.AnyAsync(hunter => hunter.Username == username, cancellationToken))
+        {
+            return Result.Failure<AuthResponse>(HunterErrors.UsernameNotUnique);
+        }
+
         var hunter = Hunter.Create(
             email,
             passwordHasher.Hash(command.Password),
             command.Name.Trim(),
+            command.Surname.Trim(),
+            username,
             timeProvider.GetUtcNow().UtcDateTime);
 
         context.Hunters.Add(hunter);

@@ -119,7 +119,7 @@ public sealed class CompleteQuestCommandHandlerTests : IDisposable
 
     private async Task<Hunter> SeedHunterAsync()
     {
-        var hunter = Hunter.Create("hunter@lvlup.app", "hash", "Jin-Woo", UtcNow.UtcDateTime);
+        var hunter = Hunter.Create("hunter@lvlup.app", "hash", "Jin-Woo", "Sung", "shadow_monarch", UtcNow.UtcDateTime);
         _context.Hunters.Add(hunter);
         await _context.SaveChangesAsync();
         return hunter;

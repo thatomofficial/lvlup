@@ -19,6 +19,8 @@ import { useAuth } from '../../lib/auth';
 export default function RegisterScreen() {
   const { signUp } = useAuth();
   const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +28,12 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     setError(null);
-    if (!name.trim() || !email.trim() || !password) {
-      setError('Name, email and password are required.');
+    if (!name.trim() || !surname.trim() || !username.trim() || !email.trim() || !password) {
+      setError('Name, surname, username, email and password are required.');
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(username.trim())) {
+      setError('Username must be 3-30 characters: letters, digits or underscores.');
       return;
     }
     if (password.length < 8) {
@@ -36,7 +42,7 @@ export default function RegisterScreen() {
     }
     setSubmitting(true);
     try {
-      await signUp(email.trim(), password, name.trim());
+      await signUp(email.trim(), password, name.trim(), surname.trim(), username.trim());
       // Redirect is handled by the (auth) layout once token is set.
     } catch (e) {
       setError(
@@ -66,10 +72,23 @@ export default function RegisterScreen() {
             <Text style={styles.panelTitle}>{'⚠'} HUNTER REGISTRATION</Text>
 
             <FormField
-              label="Hunter Name"
+              label="First Name"
               value={name}
               onChangeText={setName}
-              placeholder="Sung Jin-Woo"
+              placeholder="Jin-Woo"
+            />
+            <FormField
+              label="Surname"
+              value={surname}
+              onChangeText={setSurname}
+              placeholder="Sung"
+            />
+            <FormField
+              label="Username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              placeholder="shadow_monarch"
             />
             <FormField
               label="Email"

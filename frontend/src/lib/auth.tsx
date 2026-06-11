@@ -22,7 +22,13 @@ interface AuthContextValue {
   /** True while restoring the persisted session on app start. */
   isLoading: boolean;
   signIn(email: string, password: string): Promise<void>;
-  signUp(email: string, password: string, name: string): Promise<void>;
+  signUp(
+    email: string,
+    password: string,
+    name: string,
+    surname: string,
+    username: string,
+  ): Promise<void>;
   signOut(): Promise<void>;
   /** Re-fetches /hunters/me; signs out on 401. */
   refreshHunter(): Promise<void>;
@@ -93,8 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (email: string, password: string, name: string) => {
-      const result = await api.register(email, password, name);
+    async (
+      email: string,
+      password: string,
+      name: string,
+      surname: string,
+      username: string,
+    ) => {
+      const result = await api.register(email, password, name, surname, username);
       await establishSession(result.token, result.hunterId);
     },
     [establishSession],

@@ -154,11 +154,11 @@ describe('api client', () => {
       }),
     );
 
-    const promise = api.register('a@b.io', 'short', '');
+    const promise = api.register('a@b.io', 'short', '', '', '');
     await expect(promise).rejects.toBeInstanceOf(ApiError);
 
     try {
-      await api.register('a@b.io', 'short', '');
+      await api.register('a@b.io', 'short', '', '', '');
     } catch (e) {
       const err = e as ApiError;
       expect(err.status).toBe(400);

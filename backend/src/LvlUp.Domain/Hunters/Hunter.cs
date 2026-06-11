@@ -19,6 +19,12 @@ public sealed class Hunter : Entity
 
     public string Name { get; private set; } = string.Empty;
 
+    public string Surname { get; private set; } = string.Empty;
+
+    public string Username { get; private set; } = string.Empty;
+
+    public DisplayNamePreference DisplayNamePreference { get; private set; }
+
     public int Level { get; private set; }
 
     public int CurrentXp { get; private set; }
@@ -39,6 +45,10 @@ public sealed class Hunter : Entity
 
     public int XpForNextLevel => Level * XpPerLevelFactor;
 
+    public string DisplayName => DisplayNamePreference == DisplayNamePreference.Username
+        ? Username
+        : $"{Name} {Surname}".Trim();
+
     public HunterRank Rank => Level switch
     {
         >= 50 => HunterRank.S,
@@ -49,12 +59,21 @@ public sealed class Hunter : Entity
         _ => HunterRank.E,
     };
 
-    public static Hunter Create(string email, string passwordHash, string name, DateTime utcNow) => new()
+    public static Hunter Create(
+        string email,
+        string passwordHash,
+        string name,
+        string surname,
+        string username,
+        DateTime utcNow) => new()
     {
         Id = Guid.NewGuid(),
         Email = email,
         PasswordHash = passwordHash,
         Name = name,
+        Surname = surname,
+        Username = username,
+        DisplayNamePreference = DisplayNamePreference.FullName,
         Level = 1,
         CurrentXp = 0,
         TotalXp = 0,
@@ -65,6 +84,16 @@ public sealed class Hunter : Entity
         WellBeing = BaseStatValue,
         CreatedAtUtc = utcNow,
     };
+
+    public void SetDisplayNamePreference(DisplayNamePreference preference)
+    {
+        if (!Enum.IsDefined(preference))
+        {
+            throw new ArgumentOutOfRangeException(nameof(preference), preference, "Unknown display name preference.");
+        }
+
+        DisplayNamePreference = preference;
+    }
 
     public bool GainXp(int amount)
     {

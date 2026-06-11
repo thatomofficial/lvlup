@@ -14,6 +14,11 @@ internal sealed class HunterConfiguration : IEntityTypeConfiguration<Hunter>
         builder.HasIndex(hunter => hunter.Email).IsUnique();
 
         builder.Property(hunter => hunter.Name).HasMaxLength(50);
+        builder.Property(hunter => hunter.Surname).HasMaxLength(50);
+
+        builder.Property(hunter => hunter.Username).HasMaxLength(30);
+        builder.HasIndex(hunter => hunter.Username).IsUnique();
+
         builder.Property(hunter => hunter.PasswordHash).HasMaxLength(512);
 
         builder.Ignore(hunter => hunter.DomainEvents);

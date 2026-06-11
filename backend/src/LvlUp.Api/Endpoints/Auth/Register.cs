@@ -8,7 +8,7 @@ namespace LvlUp.Api.Endpoints.Auth;
 
 internal sealed class Register : IEndpoint
 {
-    public sealed record Request(string Email, string Password, string Name);
+    public sealed record Request(string Email, string Password, string Name, string Surname, string Username);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -17,7 +17,12 @@ internal sealed class Register : IEndpoint
             ICommandHandler<RegisterCommand, AuthResponse> handler,
             CancellationToken cancellationToken) =>
         {
-            var command = new RegisterCommand(request.Email, request.Password, request.Name);
+            var command = new RegisterCommand(
+                request.Email,
+                request.Password,
+                request.Name,
+                request.Surname,
+                request.Username);
 
             Result<AuthResponse> result = await handler.HandleAsync(command, cancellationToken);
 

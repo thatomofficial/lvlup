@@ -19,9 +19,15 @@ export interface HunterStats {
   wellBeing: number;
 }
 
+export type DisplayNamePreference = 'FullName' | 'Username';
+
 export interface Hunter {
   id: string;
   name: string;
+  surname: string;
+  username: string;
+  displayName: string;
+  displayNamePreference: DisplayNamePreference;
   email: string;
   level: number;
   currentXp: number;
