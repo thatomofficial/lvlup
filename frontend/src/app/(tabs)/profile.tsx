@@ -20,6 +20,7 @@ import { API_BASE_URL } from '../../constants/api';
 import { colors } from '../../constants/theme';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { getInitials } from '../../lib/initials';
 import type { DisplayNamePreference } from '../../lib/types';
 
 /** Tab 3 — hunter profile and account settings. */
@@ -146,7 +147,9 @@ export default function ProfileScreen() {
                     />
                   ) : (
                     <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                      <Ionicons name="person" size={30} color={colors.textDim} />
+                      <Text style={styles.avatarInitials}>
+                        {getInitials(hunter.name, hunter.surname)}
+                      </Text>
                     </View>
                   )}
                   <View style={styles.avatarEditBadge}>
@@ -321,6 +324,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarInitials: {
+    color: colors.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   avatarEditBadge: {
     position: 'absolute',
