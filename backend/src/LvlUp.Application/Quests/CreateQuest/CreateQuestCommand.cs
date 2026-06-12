@@ -10,4 +10,5 @@ public sealed record CreateQuestCommand(
     string? Description,
     StatCategory Category,
     QuestDifficulty Difficulty,
-    QuestType Type) : ICommand<Guid>;
+    QuestType Type,
+    QuestVerification Verification) : ICommand<Guid>;

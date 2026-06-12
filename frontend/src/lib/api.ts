@@ -4,6 +4,7 @@ import type {
   AssessmentScores,
   AuthResponse,
   CompleteQuestResult,
+  Consistency,
   CreateQuestRequest,
   DisplayNamePreference,
   Hunter,
@@ -205,9 +206,26 @@ export const api = {
     });
   },
 
-  completeQuest(token: string, questId: string): Promise<CompleteQuestResult> {
+  completeQuest(
+    token: string,
+    questId: string,
+    note?: string,
+  ): Promise<CompleteQuestResult> {
     return request<CompleteQuestResult>(`/quests/${questId}/complete`, {
       method: 'POST',
+      body: { note: note ?? null },
+      token,
+    });
+  },
+
+  getConsistency(token: string): Promise<Consistency> {
+    return request<Consistency>('/hunters/me/consistency', { token });
+  },
+
+  updateGitHubUsername(token: string, username: string | null): Promise<void> {
+    return request<void>('/hunters/me/github', {
+      method: 'PUT',
+      body: { username },
       token,
     });
   },

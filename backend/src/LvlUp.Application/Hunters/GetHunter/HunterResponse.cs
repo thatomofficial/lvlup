@@ -39,5 +39,7 @@ public sealed record HunterResponse
 
     public required bool HasCompletedAssessment { get; init; }
 
+    public required string? GitHubUsername { get; init; }
+
     public required HunterStatsResponse Stats { get; init; }
 }

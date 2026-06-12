@@ -12,5 +12,6 @@ internal sealed class CreateQuestCommandValidator : AbstractValidator<CreateQues
         RuleFor(command => command.Category).IsInEnum();
         RuleFor(command => command.Difficulty).IsInEnum();
         RuleFor(command => command.Type).IsInEnum();
+        RuleFor(command => command.Verification).IsInEnum();
     }
 }

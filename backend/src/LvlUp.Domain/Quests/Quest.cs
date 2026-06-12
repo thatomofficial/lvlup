@@ -23,6 +23,8 @@ public sealed class Quest : Entity
 
     public QuestType Type { get; private set; }
 
+    public QuestVerification Verification { get; private set; }
+
     public DateTime CreatedAtUtc { get; private set; }
 
     public DateTime? LastCompletedAtUtc { get; private set; }
@@ -63,6 +65,16 @@ public sealed class Quest : Entity
             Type = type,
             CreatedAtUtc = utcNow,
         };
+
+    public void SetVerification(QuestVerification verification)
+    {
+        if (!Enum.IsDefined(verification))
+        {
+            throw new ArgumentOutOfRangeException(nameof(verification), verification, "Unknown verification type.");
+        }
+
+        Verification = verification;
+    }
 
     public bool IsCompletedAt(DateTime utcNow) => Type switch
     {

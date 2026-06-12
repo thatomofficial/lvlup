@@ -56,6 +56,11 @@ namespace LvlUp.Infrastructure.Database.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("email");
 
+                    b.Property<string>("GitHubUsername")
+                        .HasMaxLength(39)
+                        .HasColumnType("character varying(39)")
+                        .HasColumnName("git_hub_username");
+
                     b.Property<int>("Intelligence")
                         .HasColumnType("integer")
                         .HasColumnName("intelligence");
@@ -168,6 +173,10 @@ namespace LvlUp.Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("type");
 
+                    b.Property<int>("Verification")
+                        .HasColumnType("integer")
+                        .HasColumnName("verification");
+
                     b.HasKey("Id")
                         .HasName("pk_quests");
 
@@ -195,6 +204,11 @@ namespace LvlUp.Infrastructure.Database.Migrations
                     b.Property<Guid>("HunterId")
                         .HasColumnType("uuid")
                         .HasColumnName("hunter_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(280)
+                        .HasColumnType("character varying(280)")
+                        .HasColumnName("note");
 
                     b.Property<Guid>("QuestId")
                         .HasColumnType("uuid")

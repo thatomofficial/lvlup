@@ -53,6 +53,7 @@ export default function AddQuestScreen() {
   const [category, setCategory] = useState<QuestCategory>('Strength');
   const [difficulty, setDifficulty] = useState<QuestDifficulty>('Easy');
   const [type, setType] = useState<QuestType>('Daily');
+  const [verifyWithGitHub, setVerifyWithGitHub] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -75,6 +76,8 @@ export default function AddQuestScreen() {
         category,
         difficulty,
         type,
+        verification:
+          category === 'Intelligence' && verifyWithGitHub ? 'GitHubPush' : 'None',
       });
       router.back();
     } catch (e) {
@@ -140,6 +143,25 @@ export default function AddQuestScreen() {
             renderLabel={(t) => (t === 'Daily' ? 'Daily' : 'One-Time')}
           />
 
+          {category === 'Intelligence' ? (
+            <Pressable
+              onPress={() => setVerifyWithGitHub((value) => !value)}
+              style={styles.verifyRow}
+              accessibilityState={{ checked: verifyWithGitHub }}
+            >
+              <View style={[styles.checkbox, verifyWithGitHub && styles.checkboxChecked]}>
+                {verifyWithGitHub ? <Text style={styles.checkmark}>✓</Text> : null}
+              </View>
+              <View style={styles.verifyTextWrap}>
+                <Text style={styles.verifyTitle}>REQUIRE PROOF: GITHUB PUSH</Text>
+                <Text style={styles.verifyHint}>
+                  Completion only counts if you pushed to GitHub today (set your
+                  username on the status screen).
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           <NeonButton
@@ -186,6 +208,45 @@ const styles = StyleSheet.create({
   multiline: {
     minHeight: 72,
     textAlignVertical: 'top',
+  },
+  verifyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryDim,
+  },
+  checkmark: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  verifyTextWrap: {
+    flex: 1,
+  },
+  verifyTitle: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  verifyHint: {
+    color: colors.textDim,
+    fontSize: 11,
+    marginTop: 2,
   },
   hint: {
     color: colors.textDim,

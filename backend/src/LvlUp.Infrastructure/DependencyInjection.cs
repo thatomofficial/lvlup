@@ -2,12 +2,15 @@ using System.Text;
 using LvlUp.Application.Abstractions.Authentication;
 using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Events;
+using LvlUp.Application.Abstractions.Integrations;
 using LvlUp.Infrastructure.Authentication;
+using LvlUp.Infrastructure.Integrations;
 using LvlUp.Infrastructure.Authorization;
 using LvlUp.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +25,25 @@ public static class DependencyInjection
         IConfiguration configuration) =>
         services
             .AddDatabase(configuration)
+            .AddIntegrations(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
+
+    private static IServiceCollection AddIntegrations(this IServiceCollection services, IConfiguration configuration)
+    {
+        string gitHubApiBaseUrl = configuration["GitHub:ApiBaseUrl"] ??
+            throw new InvalidOperationException("Configuration value 'GitHub:ApiBaseUrl' is not set.");
+
+        services.AddHttpClient<IGitHubActivityVerifier, GitHubActivityVerifier>(client =>
+        {
+            client.BaseAddress = new Uri(gitHubApiBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("LvlUp");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+        });
+
+        return services;
+    }
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
@@ -39,7 +59,11 @@ public static class DependencyInjection
             options
                 .UseNpgsql(connectionString, npgsqlOptions =>
                     npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default))
-                .UseSnakeCaseNamingConvention());
+                .UseSnakeCaseNamingConvention()
+                // The naming-convention plugin makes EF report spurious pending model
+                // changes (the scaffolded diff is empty); real drift is caught by
+                // 'dotnet ef migrations add' in development.
+                .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IDomainEventsDispatcher, DomainEventsDispatcher>();

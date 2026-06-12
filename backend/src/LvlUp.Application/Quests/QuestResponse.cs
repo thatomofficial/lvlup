@@ -17,6 +17,8 @@ public sealed record QuestResponse
 
     public required QuestType Type { get; init; }
 
+    public required QuestVerification Verification { get; init; }
+
     public required int XpReward { get; init; }
 
     public required int StatReward { get; init; }

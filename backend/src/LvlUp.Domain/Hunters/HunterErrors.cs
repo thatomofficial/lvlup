@@ -20,6 +20,10 @@ public static class HunterErrors
         "Hunters.AssessmentUnavailable",
         "The awakening assessment is only available before any XP has been earned.");
 
+    public static readonly Error GitHubUsernameNotConfigured = Error.Problem(
+        "Hunters.GitHubUsernameNotConfigured",
+        "A GitHub username must be configured before completing GitHub-verified quests.");
+
     public static readonly Error InvalidCredentials = Error.Unauthorized(
         "Hunters.InvalidCredentials",
         "The provided credentials are invalid.");

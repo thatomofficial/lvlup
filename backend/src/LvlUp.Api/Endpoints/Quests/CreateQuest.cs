@@ -16,7 +16,8 @@ internal sealed class CreateQuest : IEndpoint
         string? Description,
         StatCategory Category,
         QuestDifficulty Difficulty,
-        QuestType Type);
+        QuestType Type,
+        QuestVerification Verification = QuestVerification.None);
 
     public sealed record Response(Guid Id);
 
@@ -34,7 +35,8 @@ internal sealed class CreateQuest : IEndpoint
                 request.Description,
                 request.Category,
                 request.Difficulty,
-                request.Type);
+                request.Type,
+                request.Verification);
 
             Result<Guid> result = await handler.HandleAsync(command, cancellationToken);
 

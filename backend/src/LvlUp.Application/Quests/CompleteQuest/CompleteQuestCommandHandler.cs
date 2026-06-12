@@ -1,4 +1,5 @@
 using LvlUp.Application.Abstractions.Data;
+using LvlUp.Application.Abstractions.Integrations;
 using LvlUp.Application.Abstractions.Messaging;
 using LvlUp.Domain.Hunters;
 using LvlUp.Domain.Quests;
@@ -7,7 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LvlUp.Application.Quests.CompleteQuest;
 
-internal sealed class CompleteQuestCommandHandler(IApplicationDbContext context, TimeProvider timeProvider)
+internal sealed class CompleteQuestCommandHandler(
+    IApplicationDbContext context,
+    TimeProvider timeProvider,
+    IGitHubActivityVerifier gitHubActivityVerifier)
     : ICommandHandler<CompleteQuestCommand, CompleteQuestResponse>
 {
     public async Task<Result<CompleteQuestResponse>> HandleAsync(
@@ -34,6 +38,24 @@ internal sealed class CompleteQuestCommandHandler(IApplicationDbContext context,
 
         DateTime utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
+        if (quest.Verification == QuestVerification.GitHubPush)
+        {
+            if (string.IsNullOrWhiteSpace(hunter.GitHubUsername))
+            {
+                return Result.Failure<CompleteQuestResponse>(HunterErrors.GitHubUsernameNotConfigured);
+            }
+
+            bool hasPushed = await gitHubActivityVerifier.HasPushedOnDateAsync(
+                hunter.GitHubUsername,
+                DateOnly.FromDateTime(utcNow),
+                cancellationToken);
+
+            if (!hasPushed)
+            {
+                return Result.Failure<CompleteQuestResponse>(QuestErrors.VerificationFailed(hunter.GitHubUsername));
+            }
+        }
+
         Result completeResult = quest.Complete(utcNow);
         if (completeResult.IsFailure)
         {
@@ -43,7 +65,7 @@ internal sealed class CompleteQuestCommandHandler(IApplicationDbContext context,
         bool leveledUp = hunter.GainXp(quest.XpReward);
         hunter.IncreaseStat(quest.Category, quest.StatReward);
 
-        context.QuestCompletions.Add(QuestCompletion.Create(quest, utcNow));
+        context.QuestCompletions.Add(QuestCompletion.Create(quest, utcNow, command.Note));
 
         await context.SaveChangesAsync(cancellationToken);
 

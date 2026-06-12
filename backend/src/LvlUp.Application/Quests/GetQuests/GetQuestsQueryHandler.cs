@@ -31,6 +31,7 @@ internal sealed class GetQuestsQueryHandler(IApplicationDbContext context, TimeP
                 Category = quest.Category,
                 Difficulty = quest.Difficulty,
                 Type = quest.Type,
+                Verification = quest.Verification,
                 XpReward = quest.XpReward,
                 StatReward = quest.StatReward,
                 IsCompleted = quest.IsCompletedAt(utcNow),

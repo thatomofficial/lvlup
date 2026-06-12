@@ -51,6 +51,8 @@ public sealed class Hunter : Entity
 
     public DateTime? AssessedAtUtc { get; private set; }
 
+    public string? GitHubUsername { get; private set; }
+
     public bool HasCompletedAssessment => AssessedAtUtc is not null;
 
     public int XpForNextLevel => Level * XpPerLevelFactor;
@@ -174,6 +176,9 @@ public sealed class Hunter : Entity
                 throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category.");
         }
     }
+
+    public void SetGitHubUsername(string? username) =>
+        GitHubUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim();
 
     public void SetDisplayNamePreference(DisplayNamePreference preference)
     {

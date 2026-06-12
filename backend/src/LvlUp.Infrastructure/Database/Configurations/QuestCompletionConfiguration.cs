@@ -10,6 +10,8 @@ internal sealed class QuestCompletionConfiguration : IEntityTypeConfiguration<Qu
     {
         builder.HasKey(completion => completion.Id);
 
+        builder.Property(completion => completion.Note).HasMaxLength(280);
+
         // Intentionally no FK to Quest: completions are an immutable history log
         // that must survive quest deletion.
         builder.HasIndex(completion => completion.HunterId);

@@ -19,6 +19,8 @@ internal sealed class CreateQuestCommandHandler(IApplicationDbContext context, T
             command.Type,
             timeProvider.GetUtcNow().UtcDateTime);
 
+        quest.SetVerification(command.Verification);
+
         context.Quests.Add(quest);
 
         await context.SaveChangesAsync(cancellationToken);

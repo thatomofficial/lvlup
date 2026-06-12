@@ -47,6 +47,17 @@ SharedKernel  ←  Domain  ←  Application  ←  Infrastructure  ←  Api
 
 ## Game rules
 
+- **Consistency** — streaks are computed from the immutable, server-timestamped completion log
+  (no backfilling, one daily completion per UTC day). A day with ≥1 completion extends the
+  streak; today never breaks it while in progress. Every 7 consecutive active days banks a
+  **streak shield** (max 3) that auto-absorbs one missed day. The status window shows current/
+  longest streak, shields, a 30-day discipline score, and a 12-week heatmap
+  (`GET /hunters/me/consistency`).
+- **Proof of work** — completing a quest prompts for an optional reflection note (stored on the
+  completion record). Intelligence quests can require **GitHub verification**: completion is
+  rejected unless the linked GitHub account (set on the status screen) has a public push event
+  today. Note: the unauthenticated GitHub events feed only sees public repositories.
+
 - **Awakening assessment** — new hunters answer 7 self-assessment questions (one per stat,
   scored 1–5) before entering the app. Scores set the *starting* stats (`4 + 2×score`, so 6–14
   instead of a flat 10), and the starter quest pack is calibrated to them: stat ≤ 8 → Easy
@@ -196,9 +207,11 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |
 | POST | `/hunters/me/assessment` | ✓ | `{ scores: { Strength: 1-5, … } }` (all 7) → starting stats + recommended difficulties; 409 if repeated or XP > 0 |
 | POST | `/quests/starter-pack` | ✓ | Creates the starter habit quests calibrated to current stats; idempotent |
+| GET | `/hunters/me/consistency` | ✓ | Streaks, shields, discipline score, 84-day heatmap |
+| PUT | `/hunters/me/github` | ✓ | `{ username }` (null to unlink) → 204 |
 | GET | `/quests` | ✓ | All quests with computed `isCompleted` |
 | POST | `/quests` | ✓ | `{ title, description?, category, difficulty, type }` → `{ id }` |
-| POST | `/quests/{id}/complete` | ✓ | Awards XP + stat; 409 if already completed |
+| POST | `/quests/{id}/complete` | ✓ | `{ note? }` — awards XP + stat; 409 if already completed; 400 if GitHub verification fails |
 | DELETE | `/quests/{id}` | ✓ | 204; completion history is preserved |
 
 Enums are JSON strings: `category` ∈ Strength/Stamina/Physique/Looks/WellBeing/Intelligence/Charisma,

@@ -13,6 +13,8 @@ export type QuestDifficulty = 'Easy' | 'Medium' | 'Hard' | 'Elite';
 
 export type QuestType = 'Daily' | 'OneTime';
 
+export type QuestVerification = 'None' | 'GitHubPush';
+
 export interface HunterStats {
   strength: number;
   stamina: number;
@@ -39,6 +41,7 @@ export interface Hunter {
   totalXp: number;
   rank: Rank;
   hasCompletedAssessment: boolean;
+  gitHubUsername: string | null;
   stats: HunterStats;
 }
 
@@ -62,6 +65,7 @@ export interface Quest {
   category: QuestCategory;
   difficulty: QuestDifficulty;
   type: QuestType;
+  verification: QuestVerification;
   xpReward: number;
   statReward: number;
   isCompleted: boolean;
@@ -79,6 +83,21 @@ export interface CreateQuestRequest {
   category: QuestCategory;
   difficulty: QuestDifficulty;
   type: QuestType;
+  verification?: QuestVerification;
+}
+
+export interface ConsistencyDay {
+  date: string;
+  completions: number;
+  shielded: boolean;
+}
+
+export interface Consistency {
+  currentStreak: number;
+  longestStreak: number;
+  shields: number;
+  disciplineScore: number;
+  days: ConsistencyDay[];
 }
 
 export interface CompleteQuestResult {

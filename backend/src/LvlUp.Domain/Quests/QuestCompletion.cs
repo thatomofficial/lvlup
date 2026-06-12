@@ -22,7 +22,9 @@ public sealed class QuestCompletion
 
     public DateTime CompletedAtUtc { get; private set; }
 
-    public static QuestCompletion Create(Quest quest, DateTime utcNow)
+    public string? Note { get; private set; }
+
+    public static QuestCompletion Create(Quest quest, DateTime utcNow, string? note)
     {
         ArgumentNullException.ThrowIfNull(quest);
 
@@ -35,6 +37,7 @@ public sealed class QuestCompletion
             XpAwarded = quest.XpReward,
             StatAwarded = quest.StatReward,
             CompletedAtUtc = utcNow,
+            Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
         };
     }
 }

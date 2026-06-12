@@ -9,15 +9,18 @@ namespace LvlUp.Api.Endpoints.Quests;
 
 internal sealed class CompleteQuest : IEndpoint
 {
+    public sealed record Request(string? Note);
+
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("quests/{questId:guid}/complete", async (
             Guid questId,
+            Request request,
             IUserContext userContext,
             ICommandHandler<CompleteQuestCommand, CompleteQuestResponse> handler,
             CancellationToken cancellationToken) =>
         {
-            var command = new CompleteQuestCommand(userContext.UserId, questId);
+            var command = new CompleteQuestCommand(userContext.UserId, questId, request.Note);
 
             Result<CompleteQuestResponse> result = await handler.HandleAsync(command, cancellationToken);
 

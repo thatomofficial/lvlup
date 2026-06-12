@@ -6,10 +6,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ConsistencyPanel } from '../../components/ConsistencyPanel';
 import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
 import { StatRow } from '../../components/StatRow';
@@ -24,15 +26,33 @@ export default function StatusScreen() {
   const { token, hunter, refreshHunter, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [savingPreference, setSavingPreference] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editingGitHub, setEditingGitHub] = useState(false);
+  const [gitHubDraft, setGitHubDraft] = useState('');
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await refreshHunter();
+      setRefreshKey((key) => key + 1);
     } finally {
       setRefreshing(false);
     }
   }, [refreshHunter]);
+
+  const saveGitHubUsername = useCallback(async () => {
+    if (!token) {
+      return;
+    }
+    try {
+      const value = gitHubDraft.trim();
+      await api.updateGitHubUsername(token, value.length > 0 ? value : null);
+      await refreshHunter();
+      setEditingGitHub(false);
+    } catch {
+      // Validation errors keep the editor open for correction.
+    }
+  }, [token, gitHubDraft, refreshHunter]);
 
   const changeDisplayPreference = useCallback(
     async (preference: DisplayNamePreference) => {
@@ -140,7 +160,49 @@ export default function StatusScreen() {
                   );
                 })}
               </View>
+
+              <View style={styles.githubRow}>
+                <Text style={styles.displayLabel}>GITHUB</Text>
+                {editingGitHub ? (
+                  <>
+                    <TextInput
+                      style={styles.githubInput}
+                      value={gitHubDraft}
+                      onChangeText={setGitHubDraft}
+                      placeholder="username"
+                      placeholderTextColor={colors.textDim}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                    <Pressable
+                      onPress={saveGitHubUsername}
+                      style={[styles.displayOption, styles.displayOptionSelected]}
+                    >
+                      <Text style={[styles.displayOptionText, styles.displayOptionTextSelected]}>
+                        SAVE
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.githubValue}>
+                      {hunter.gitHubUsername ? `@${hunter.gitHubUsername}` : 'not linked'}
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setGitHubDraft(hunter.gitHubUsername ?? '');
+                        setEditingGitHub(true);
+                      }}
+                      style={styles.displayOption}
+                    >
+                      <Text style={styles.displayOptionText}>EDIT</Text>
+                    </Pressable>
+                  </>
+                )}
+              </View>
             </GlowPanel>
+
+            <ConsistencyPanel token={token} refreshKey={refreshKey} />
 
             <GlowPanel style={styles.statsPanel}>
               <Text style={styles.sectionTitle}>STATS</Text>
@@ -302,6 +364,28 @@ const styles = StyleSheet.create({
   },
   displayOptionTextSelected: {
     color: colors.primary,
+  },
+  githubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
+  githubValue: {
+    color: colors.text,
+    fontSize: 12,
+    flex: 1,
+  },
+  githubInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 6,
+    backgroundColor: colors.surfaceLight,
+    color: colors.text,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    fontSize: 12,
   },
   totalXp: {
     color: colors.textDim,

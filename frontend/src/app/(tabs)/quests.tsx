@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CompleteQuestModal } from '../../components/CompleteQuestModal';
 import { GlowPanel } from '../../components/GlowPanel';
 import { LevelUpModal } from '../../components/LevelUpModal';
 import { QuestCard } from '../../components/QuestCard';
@@ -32,6 +33,7 @@ export default function QuestsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [questToComplete, setQuestToComplete] = useState<Quest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [levelUp, setLevelUp] = useState<{ visible: boolean; level: number }>({
@@ -68,13 +70,13 @@ export default function QuestsScreen() {
   }, [loadQuests]);
 
   const handleComplete = useCallback(
-    async (quest: Quest) => {
+    async (quest: Quest, note: string | undefined) => {
       if (!token) {
         return;
       }
       setCompletingId(quest.id);
       try {
-        const result = await api.completeQuest(token, quest.id);
+        const result = await api.completeQuest(token, quest.id, note);
         setQuests((prev) =>
           prev.map((q) =>
             q.id === quest.id
@@ -203,7 +205,7 @@ export default function QuestsScreen() {
             <QuestCard
               quest={item}
               isCompleting={completingId === item.id}
-              onComplete={handleComplete}
+              onComplete={setQuestToComplete}
               onDelete={confirmDelete}
             />
           )}
@@ -218,6 +220,14 @@ export default function QuestsScreen() {
         <Ionicons name="add" size={30} color={colors.background} />
       </Pressable>
 
+      <CompleteQuestModal
+        quest={questToComplete}
+        onConfirm={(quest, note) => {
+          setQuestToComplete(null);
+          void handleComplete(quest, note);
+        }}
+        onCancel={() => setQuestToComplete(null)}
+      />
       <XpToast message={toast} onHide={() => setToast(null)} />
       <LevelUpModal
         visible={levelUp.visible}

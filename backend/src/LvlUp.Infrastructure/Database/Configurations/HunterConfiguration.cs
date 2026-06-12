@@ -20,6 +20,7 @@ internal sealed class HunterConfiguration : IEntityTypeConfiguration<Hunter>
         builder.HasIndex(hunter => hunter.Username).IsUnique();
 
         builder.Property(hunter => hunter.PasswordHash).HasMaxLength(512);
+        builder.Property(hunter => hunter.GitHubUsername).HasMaxLength(39);
 
         builder.Ignore(hunter => hunter.DomainEvents);
     }
