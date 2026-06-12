@@ -65,7 +65,7 @@ public sealed class CompleteQuestCommandHandlerTests : IDisposable
 
         await _handler.HandleAsync(command, CancellationToken.None);
 
-        hunter.Stamina.ShouldBe(Hunter.BaseStatValue + 2);
+        hunter.Stats.Stamina.ShouldBe(Hunter.BaseStatValue + 2);
     }
 
     [Fact]

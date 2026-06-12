@@ -1,12 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useState } from 'react';
 import {
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,18 +14,13 @@ import { RankBadge } from '../../components/RankBadge';
 import { StatRow } from '../../components/StatRow';
 import { XpBar } from '../../components/XpBar';
 import { categoryLabels, colors } from '../../constants/theme';
-import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import type { DisplayNamePreference } from '../../lib/types';
 
 /** Tab 1 — the Solo Leveling style STATUS WINDOW. */
 export default function StatusScreen() {
-  const { token, hunter, refreshHunter, signOut } = useAuth();
+  const { token, hunter, refreshHunter } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [savingPreference, setSavingPreference] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [editingGitHub, setEditingGitHub] = useState(false);
-  const [gitHubDraft, setGitHubDraft] = useState('');
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -39,38 +31,6 @@ export default function StatusScreen() {
       setRefreshing(false);
     }
   }, [refreshHunter]);
-
-  const saveGitHubUsername = useCallback(async () => {
-    if (!token) {
-      return;
-    }
-    try {
-      const value = gitHubDraft.trim();
-      await api.updateGitHubUsername(token, value.length > 0 ? value : null);
-      await refreshHunter();
-      setEditingGitHub(false);
-    } catch {
-      // Validation errors keep the editor open for correction.
-    }
-  }, [token, gitHubDraft, refreshHunter]);
-
-  const changeDisplayPreference = useCallback(
-    async (preference: DisplayNamePreference) => {
-      if (!token || !hunter || hunter.displayNamePreference === preference) {
-        return;
-      }
-      setSavingPreference(true);
-      try {
-        await api.updateDisplayPreference(token, preference);
-        await refreshHunter();
-      } catch {
-        // Leave the previous preference in place; pull-to-refresh re-syncs.
-      } finally {
-        setSavingPreference(false);
-      }
-    },
-    [token, hunter, refreshHunter],
-  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -86,18 +46,7 @@ export default function StatusScreen() {
           />
         }
       >
-        <View style={styles.headerRow}>
-          <Text style={styles.screenTitle}>{'⚠'} STATUS WINDOW</Text>
-          <Pressable
-            onPress={signOut}
-            hitSlop={8}
-            style={styles.logoutButton}
-            accessibilityLabel="Log out"
-          >
-            <Ionicons name="log-out-outline" size={16} color={colors.textDim} />
-            <Text style={styles.logoutText}>LOGOUT</Text>
-          </Pressable>
-        </View>
+        <Text style={styles.screenTitle}>{'⚠'} STATUS WINDOW</Text>
 
         {hunter ? (
           <>
@@ -126,79 +75,6 @@ export default function StatusScreen() {
                 <Text style={styles.totalXp}>
                   TOTAL XP: {hunter.totalXp}
                 </Text>
-              </View>
-
-              <View style={styles.displayRow}>
-                <Text style={styles.displayLabel}>DISPLAY</Text>
-                {(
-                  [
-                    { value: 'FullName', label: 'FULL NAME' },
-                    { value: 'Username', label: 'USERNAME' },
-                  ] as const
-                ).map((option) => {
-                  const selected = hunter.displayNamePreference === option.value;
-                  return (
-                    <Pressable
-                      key={option.value}
-                      onPress={() => changeDisplayPreference(option.value)}
-                      disabled={savingPreference}
-                      style={[
-                        styles.displayOption,
-                        selected && styles.displayOptionSelected,
-                      ]}
-                      accessibilityState={{ selected }}
-                    >
-                      <Text
-                        style={[
-                          styles.displayOptionText,
-                          selected && styles.displayOptionTextSelected,
-                        ]}
-                      >
-                        {option.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <View style={styles.githubRow}>
-                <Text style={styles.displayLabel}>GITHUB</Text>
-                {editingGitHub ? (
-                  <>
-                    <TextInput
-                      style={styles.githubInput}
-                      value={gitHubDraft}
-                      onChangeText={setGitHubDraft}
-                      placeholder="username"
-                      placeholderTextColor={colors.textDim}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                    />
-                    <Pressable
-                      onPress={saveGitHubUsername}
-                      style={[styles.displayOption, styles.displayOptionSelected]}
-                    >
-                      <Text style={[styles.displayOptionText, styles.displayOptionTextSelected]}>
-                        SAVE
-                      </Text>
-                    </Pressable>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.githubValue}>
-                      {hunter.gitHubUsername ? `@${hunter.gitHubUsername}` : 'not linked'}
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        setGitHubDraft(hunter.gitHubUsername ?? '');
-                        setEditingGitHub(true);
-                      }}
-                      style={styles.displayOption}
-                    >
-                      <Text style={styles.displayOptionText}>EDIT</Text>
-                    </Pressable>
-                  </>
-                )}
               </View>
             </GlowPanel>
 
@@ -254,12 +130,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   screenTitle: {
     color: colors.primary,
     fontSize: 16,
@@ -268,22 +138,7 @@ const styles = StyleSheet.create({
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  logoutText: {
-    color: colors.textDim,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    fontWeight: '700',
+    marginBottom: 16,
   },
   identityPanel: {
     marginBottom: 16,
@@ -331,61 +186,6 @@ const styles = StyleSheet.create({
   },
   xpSection: {
     marginTop: 18,
-  },
-  displayRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 16,
-  },
-  displayLabel: {
-    color: colors.textDim,
-    fontSize: 10,
-    letterSpacing: 2,
-    fontWeight: '700',
-    marginRight: 4,
-  },
-  displayOption: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  displayOptionSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryDim,
-  },
-  displayOptionText: {
-    color: colors.textDim,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    fontWeight: '700',
-  },
-  displayOptionTextSelected: {
-    color: colors.primary,
-  },
-  githubRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-  githubValue: {
-    color: colors.text,
-    fontSize: 12,
-    flex: 1,
-  },
-  githubInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    backgroundColor: colors.surfaceLight,
-    color: colors.text,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    fontSize: 12,
   },
   totalXp: {
     color: colors.textDim,

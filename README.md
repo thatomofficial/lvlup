@@ -78,7 +78,8 @@ migrations in `backend/src/LvlUp.Infrastructure/Database/Migrations/`. All table
 
 | Table | Columns | Notes |
 | --- | --- | --- |
-| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `surname` (varchar 50), `username` (varchar 30, unique, lowercase), `display_name_preference` (int enum: 0 FullName / 1 Username), `level`, `current_xp`, `total_xp`, `strength`, `stamina`, `physique`, `looks`, `well_being`, `intelligence`, `charisma` (int), `created_at_utc` (timestamptz) | One row per account; display name is computed from the preference |
+| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `surname` (varchar 50), `username` (varchar 30, unique, lowercase), `display_name_preference` (int enum: 0 FullName / 1 Username), `github_username` (varchar 39, null), `level`, `current_xp`, `total_xp` (int), `created_at_utc`, `assessed_at_utc` (timestamptz) | One row per account; display name is computed from the preference |
+| `lvlup.hunter_stats` | `hunter_id` (uuid PK, FK → hunters, cascade delete), `strength`, `stamina`, `physique`, `looks`, `well_being`, `intelligence`, `charisma` (int) | One row per hunter; mapped as an EF owned entity, always loaded with the hunter |
 | `lvlup.quests` | `id` (uuid PK), `hunter_id` (uuid FK → hunters, cascade delete, indexed), `title` (varchar 100), `description` (varchar 500, null), `category`, `difficulty`, `type` (int enums), `created_at_utc`, `last_completed_at_utc` (timestamptz, null) | Daily completion state derives from `last_completed_at_utc` |
 | `lvlup.quest_completions` | `id` (uuid PK), `quest_id`, `hunter_id` (uuid, indexed), `category`, `xp_awarded`, `stat_awarded` (int), `completed_at_utc` (timestamptz) | Append-only history; intentionally no FK to quests so it survives quest deletion |
 

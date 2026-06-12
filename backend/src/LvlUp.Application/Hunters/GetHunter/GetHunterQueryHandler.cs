@@ -1,4 +1,4 @@
-using LvlUp.Application.Abstractions.Data;
+﻿using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Messaging;
 using LvlUp.Domain.Hunters;
 using LvlUp.SharedKernel;
@@ -37,13 +37,13 @@ internal sealed class GetHunterQueryHandler(IApplicationDbContext context)
             HasCompletedAssessment = hunter.HasCompletedAssessment,
             GitHubUsername = hunter.GitHubUsername,
             Stats = new HunterStatsResponse(
-                hunter.Strength,
-                hunter.Stamina,
-                hunter.Physique,
-                hunter.Looks,
-                hunter.WellBeing,
-                hunter.Intelligence,
-                hunter.Charisma),
+                hunter.Stats.Strength,
+                hunter.Stats.Stamina,
+                hunter.Stats.Physique,
+                hunter.Stats.Looks,
+                hunter.Stats.WellBeing,
+                hunter.Stats.Intelligence,
+                hunter.Stats.Charisma),
         };
     }
 }

@@ -22,6 +22,7 @@ internal sealed class TestApplicationDbContext(DbContextOptions<TestApplicationD
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Hunter>().Ignore(hunter => hunter.DomainEvents);
+        modelBuilder.Entity<Hunter>().OwnsOne(hunter => hunter.Stats);
         modelBuilder.Entity<Quest>().Ignore(quest => quest.DomainEvents);
         modelBuilder.Entity<QuestCompletion>();
     }

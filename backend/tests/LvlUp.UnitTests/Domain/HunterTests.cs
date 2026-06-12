@@ -1,4 +1,4 @@
-using LvlUp.Domain.Hunters;
+﻿using LvlUp.Domain.Hunters;
 using LvlUp.SharedKernel;
 using Shouldly;
 
@@ -25,11 +25,13 @@ public class HunterTests
         Hunter hunter = CreateHunter();
 
         hunter.ShouldSatisfyAllConditions(
-            h => h.Strength.ShouldBe(Hunter.BaseStatValue),
-            h => h.Stamina.ShouldBe(Hunter.BaseStatValue),
-            h => h.Physique.ShouldBe(Hunter.BaseStatValue),
-            h => h.Looks.ShouldBe(Hunter.BaseStatValue),
-            h => h.WellBeing.ShouldBe(Hunter.BaseStatValue));
+            h => h.Stats.Strength.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.Stamina.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.Physique.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.Looks.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.WellBeing.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.Intelligence.ShouldBe(Hunter.BaseStatValue),
+            h => h.Stats.Charisma.ShouldBe(Hunter.BaseStatValue));
     }
 
     [Fact]
@@ -191,8 +193,8 @@ public class HunterTests
         hunter.ApplyAssessment(CreateScores(charisma: 1, strength: 5), UtcNow);
 
         hunter.ShouldSatisfyAllConditions(
-            h => h.Charisma.ShouldBe(6),
-            h => h.Strength.ShouldBe(14));
+            h => h.Stats.Charisma.ShouldBe(6),
+            h => h.Stats.Strength.ShouldBe(14));
     }
 
     [Fact]
@@ -270,13 +272,13 @@ public class HunterTests
 
     private static int GetStat(Hunter hunter, StatCategory category) => category switch
     {
-        StatCategory.Strength => hunter.Strength,
-        StatCategory.Stamina => hunter.Stamina,
-        StatCategory.Physique => hunter.Physique,
-        StatCategory.Looks => hunter.Looks,
-        StatCategory.WellBeing => hunter.WellBeing,
-        StatCategory.Intelligence => hunter.Intelligence,
-        StatCategory.Charisma => hunter.Charisma,
+        StatCategory.Strength => hunter.Stats.Strength,
+        StatCategory.Stamina => hunter.Stats.Stamina,
+        StatCategory.Physique => hunter.Stats.Physique,
+        StatCategory.Looks => hunter.Stats.Looks,
+        StatCategory.WellBeing => hunter.Stats.WellBeing,
+        StatCategory.Intelligence => hunter.Stats.Intelligence,
+        StatCategory.Charisma => hunter.Stats.Charisma,
         _ => throw new ArgumentOutOfRangeException(nameof(category)),
     };
 }

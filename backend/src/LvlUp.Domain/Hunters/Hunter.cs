@@ -33,19 +33,7 @@ public sealed class Hunter : Entity
 
     public int TotalXp { get; private set; }
 
-    public int Strength { get; private set; }
-
-    public int Stamina { get; private set; }
-
-    public int Physique { get; private set; }
-
-    public int Looks { get; private set; }
-
-    public int WellBeing { get; private set; }
-
-    public int Intelligence { get; private set; }
-
-    public int Charisma { get; private set; }
+    public HunterStats Stats { get; private set; } = null!;
 
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -89,27 +77,11 @@ public sealed class Hunter : Entity
         Level = 1,
         CurrentXp = 0,
         TotalXp = 0,
-        Strength = BaseStatValue,
-        Stamina = BaseStatValue,
-        Physique = BaseStatValue,
-        Looks = BaseStatValue,
-        WellBeing = BaseStatValue,
-        Intelligence = BaseStatValue,
-        Charisma = BaseStatValue,
+        Stats = HunterStats.CreateBase(),
         CreatedAtUtc = utcNow,
     };
 
-    public int GetStat(StatCategory category) => category switch
-    {
-        StatCategory.Strength => Strength,
-        StatCategory.Stamina => Stamina,
-        StatCategory.Physique => Physique,
-        StatCategory.Looks => Looks,
-        StatCategory.WellBeing => WellBeing,
-        StatCategory.Intelligence => Intelligence,
-        StatCategory.Charisma => Charisma,
-        _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category."),
-    };
+    public int GetStat(StatCategory category) => Stats.Get(category);
 
     /// <summary>
     /// Applies the one-time awakening self-assessment: each category score (1-5)
@@ -136,7 +108,7 @@ public sealed class Hunter : Entity
                 throw new ArgumentOutOfRangeException(nameof(scores), score, "Assessment scores must be between 1 and 5.");
             }
 
-            SetStat(category, StatValueForScore(score));
+            Stats.Set(category, StatValueForScore(score));
         }
 
         AssessedAtUtc = utcNow;
@@ -146,36 +118,6 @@ public sealed class Hunter : Entity
 
     /// <summary>Maps a 1-5 self-assessment score onto a starting stat of 6-14.</summary>
     public static int StatValueForScore(int score) => 4 + (score * 2);
-
-    private void SetStat(StatCategory category, int value)
-    {
-        switch (category)
-        {
-            case StatCategory.Strength:
-                Strength = value;
-                break;
-            case StatCategory.Stamina:
-                Stamina = value;
-                break;
-            case StatCategory.Physique:
-                Physique = value;
-                break;
-            case StatCategory.Looks:
-                Looks = value;
-                break;
-            case StatCategory.WellBeing:
-                WellBeing = value;
-                break;
-            case StatCategory.Intelligence:
-                Intelligence = value;
-                break;
-            case StatCategory.Charisma:
-                Charisma = value;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category.");
-        }
-    }
 
     public void SetGitHubUsername(string? username) =>
         GitHubUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim();
@@ -213,35 +155,5 @@ public sealed class Hunter : Entity
         return leveledUp;
     }
 
-    public void IncreaseStat(StatCategory category, int amount)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
-
-        switch (category)
-        {
-            case StatCategory.Strength:
-                Strength += amount;
-                break;
-            case StatCategory.Stamina:
-                Stamina += amount;
-                break;
-            case StatCategory.Physique:
-                Physique += amount;
-                break;
-            case StatCategory.Looks:
-                Looks += amount;
-                break;
-            case StatCategory.WellBeing:
-                WellBeing += amount;
-                break;
-            case StatCategory.Intelligence:
-                Intelligence += amount;
-                break;
-            case StatCategory.Charisma:
-                Charisma += amount;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category.");
-        }
-    }
+    public void IncreaseStat(StatCategory category, int amount) => Stats.Increase(category, amount);
 }
