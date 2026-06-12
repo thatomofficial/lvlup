@@ -3,10 +3,12 @@ using LvlUp.Application.Abstractions.Authentication;
 using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Events;
 using LvlUp.Application.Abstractions.Integrations;
+using LvlUp.Application.Abstractions.Storage;
 using LvlUp.Application.Hunters.GetBadges;
 using LvlUp.Application.Hunters.GetConsistency;
 using LvlUp.Infrastructure.Authentication;
 using LvlUp.Infrastructure.DataGateways;
+using LvlUp.Infrastructure.Storage;
 using LvlUp.Infrastructure.Integrations;
 using LvlUp.Infrastructure.Authorization;
 using LvlUp.Infrastructure.Database;
@@ -28,6 +30,7 @@ public static class DependencyInjection
         IConfiguration configuration) =>
         services
             .AddDatabase(configuration)
+            .AddStorage(configuration)
             .AddIntegrations(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
@@ -73,6 +76,20 @@ public static class DependencyInjection
 
         services.AddScoped<IConsistencyDataGateway, ConsistencyDataGateway>();
         services.AddScoped<IBadgeProgressDataGateway, BadgeProgressDataGateway>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<StorageOptions>()
+            .Bind(configuration.GetSection(StorageOptions.SectionName))
+            .Validate(
+                options => !string.IsNullOrWhiteSpace(options.Root),
+                "Storage:Root must be configured. Set it via appsettings or the Storage__Root environment variable.")
+            .ValidateOnStart();
+
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
 
         return services;
     }

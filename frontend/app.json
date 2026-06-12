@@ -37,7 +37,13 @@
           "backgroundColor": "#04060F"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LvlUp uses your photos to set your hunter avatar."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

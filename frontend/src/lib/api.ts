@@ -141,6 +141,40 @@ async function request<T>(
   return (await response.json()) as T;
 }
 
+/** React Native file descriptor accepted by FormData. */
+export interface UploadFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+async function uploadFile<T>(
+  path: string,
+  token: string,
+  file: UploadFile,
+): Promise<T> {
+  const form = new FormData();
+  form.append('file', file as unknown as Blob);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+
+  if (!response.ok) {
+    let problem: ProblemDetails | null = null;
+    try {
+      problem = parseProblemDetails(await response.json());
+    } catch {
+      problem = null;
+    }
+    throw new ApiError(response.status, problem);
+  }
+
+  return (await response.json()) as T;
+}
+
 export const api = {
   register(
     email: string,
@@ -225,6 +259,10 @@ export const api = {
 
   getBadges(token: string): Promise<Badge[]> {
     return request<Badge[]>('/hunters/me/badges', { token });
+  },
+
+  uploadAvatar(token: string, file: UploadFile): Promise<{ avatarUrl: string }> {
+    return uploadFile<{ avatarUrl: string }>('/hunters/me/avatar', token, file);
   },
 
   updateGitHubUsername(token: string, username: string | null): Promise<void> {

@@ -40,6 +40,7 @@ export interface Hunter {
   xpForNextLevel: number;
   totalXp: number;
   rank: Rank;
+  avatarUrl: string | null;
   hasCompletedAssessment: boolean;
   gitHubUsername: string | null;
   stats: HunterStats;

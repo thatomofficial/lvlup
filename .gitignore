@@ -4,6 +4,9 @@ backend/**/obj/
 backend/.vs/
 *.user
 
+# Locally stored uploads (avatars etc.)
+backend/src/LvlUp.Api/storage/
+
 # Node / Expo
 frontend/node_modules/
 frontend/.env*.local

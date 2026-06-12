@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import {
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,8 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BadgesPanel } from '../../components/BadgesPanel';
 import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
+import { API_BASE_URL } from '../../constants/api';
 import { colors } from '../../constants/theme';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import type { DisplayNamePreference } from '../../lib/types';
 
@@ -27,6 +30,8 @@ export default function ProfileScreen() {
   const [savingPreference, setSavingPreference] = useState(false);
   const [editingGitHub, setEditingGitHub] = useState(false);
   const [gitHubDraft, setGitHubDraft] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -37,6 +42,44 @@ export default function ProfileScreen() {
       setRefreshing(false);
     }
   }, [refreshHunter]);
+
+  const pickAvatar = useCallback(async () => {
+    if (!token || uploadingAvatar) {
+      return;
+    }
+    setAvatarError(null);
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setAvatarError('Photo library access is required to set an avatar.');
+      return;
+    }
+
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    const asset = picked.assets?.[0];
+    if (picked.canceled || !asset) {
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      await api.uploadAvatar(token, {
+        uri: asset.uri,
+        name: asset.fileName ?? 'avatar.jpg',
+        type: asset.mimeType ?? 'image/jpeg',
+      });
+      await refreshHunter();
+    } catch (e) {
+      setAvatarError(e instanceof ApiError ? e.message : 'Avatar upload failed.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }, [token, uploadingAvatar, refreshHunter]);
 
   const saveGitHubUsername = useCallback(async () => {
     if (!token) {
@@ -90,7 +133,30 @@ export default function ProfileScreen() {
           <>
             <GlowPanel style={styles.panel}>
               <View style={styles.identityRow}>
-                <RankBadge rank={hunter.rank} />
+                <Pressable
+                  onPress={pickAvatar}
+                  disabled={uploadingAvatar}
+                  style={styles.avatarWrap}
+                  accessibilityLabel="Change avatar"
+                >
+                  {hunter.avatarUrl ? (
+                    <Image
+                      source={{ uri: `${API_BASE_URL}${hunter.avatarUrl}` }}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                      <Ionicons name="person" size={30} color={colors.textDim} />
+                    </View>
+                  )}
+                  <View style={styles.avatarEditBadge}>
+                    <Ionicons
+                      name={uploadingAvatar ? 'hourglass-outline' : 'camera'}
+                      size={11}
+                      color={colors.background}
+                    />
+                  </View>
+                </Pressable>
                 <View style={styles.identityInfo}>
                   <Text style={styles.hunterName} numberOfLines={1}>
                     {hunter.displayName}
@@ -101,7 +167,11 @@ export default function ProfileScreen() {
                     {hunter.name} {hunter.surname} · LV.{hunter.level}
                   </Text>
                 </View>
+                <RankBadge rank={hunter.rank} />
               </View>
+              {avatarError ? (
+                <Text style={styles.avatarError}>{avatarError}</Text>
+              ) : null}
             </GlowPanel>
 
             <BadgesPanel token={token} refreshKey={refreshKey} />
@@ -236,6 +306,37 @@ const styles = StyleSheet.create({
   },
   identityInfo: {
     flex: 1,
+  },
+  avatarWrap: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  avatarPlaceholder: {
+    backgroundColor: colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarError: {
+    color: colors.danger,
+    fontSize: 11,
+    marginTop: 10,
   },
   hunterName: {
     color: colors.text,

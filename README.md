@@ -82,7 +82,7 @@ migrations in `backend/src/LvlUp.Infrastructure/Database/Migrations/`. All table
 
 | Table | Columns | Notes |
 | --- | --- | --- |
-| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `surname` (varchar 50), `username` (varchar 30, unique, lowercase), `display_name_preference` (int enum: 0 FullName / 1 Username), `github_username` (varchar 39, null), `level`, `current_xp`, `total_xp` (int), `created_at_utc`, `assessed_at_utc` (timestamptz) | One row per account; display name is computed from the preference |
+| `lvlup.hunters` | `id` (uuid PK), `email` (varchar 256, unique), `password_hash` (varchar 512), `name` (varchar 50), `surname` (varchar 50), `username` (varchar 30, unique, lowercase), `display_name_preference` (int enum: 0 FullName / 1 Username), `github_username` (varchar 39, null), `avatar_path` (varchar 260, null — storage-relative path; the image file lives in external storage, never in the DB), `level`, `current_xp`, `total_xp` (int), `created_at_utc`, `assessed_at_utc` (timestamptz) | One row per account; display name is computed from the preference |
 | `lvlup.hunter_stats` | `hunter_id` (uuid PK, FK → hunters, cascade delete), `strength`, `stamina`, `physique`, `looks`, `well_being`, `intelligence`, `charisma` (int) | One row per hunter; mapped as an EF owned entity, always loaded with the hunter |
 | `lvlup.quests` | `id` (uuid PK), `hunter_id` (uuid FK → hunters, cascade delete, indexed), `title` (varchar 100), `description` (varchar 500, null), `category`, `difficulty`, `type` (int enums), `created_at_utc`, `last_completed_at_utc` (timestamptz, null) | Daily completion state derives from `last_completed_at_utc` |
 | `lvlup.quest_completions` | `id` (uuid PK), `quest_id`, `hunter_id` (uuid, indexed), `category`, `xp_awarded`, `stat_awarded` (int), `completed_at_utc` (timestamptz) | Append-only history; intentionally no FK to quests so it survives quest deletion |
@@ -213,6 +213,7 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | POST | `/hunters/me/assessment` | ✓ | `{ scores: { Strength: 1-5, … } }` (all 7) → starting stats + recommended difficulties; 409 if repeated or XP > 0 |
 | POST | `/quests/starter-pack` | ✓ | Creates the starter habit quests calibrated to current stats; idempotent |
 | GET | `/hunters/me/badges` | ✓ | 28 badges (7 categories × 4 tiers), earned by completion counts: Iron 5 / Steel 25 / Mythril 75 / Monarch 200 |
+| POST | `/hunters/me/avatar` | ✓ | multipart `file` (JPEG/PNG/WebP, ≤5 MB) → `{ avatarUrl }`; file stored via `IFileStorage` (local disk at `Storage:Root`, served at `/files/*`; swap the adapter for S3/Azure Blob), only the path is saved in the DB |
 | GET | `/hunters/me/consistency` | ✓ | Streaks, shields, discipline score, 84-day heatmap |
 | PUT | `/hunters/me/github` | ✓ | `{ username }` (null to unlink) → 204 |
 | GET | `/quests` | ✓ | All quests with computed `isCompleted` |

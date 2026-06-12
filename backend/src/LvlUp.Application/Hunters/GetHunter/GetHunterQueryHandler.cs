@@ -1,5 +1,6 @@
 ﻿using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Messaging;
+using LvlUp.Application.Abstractions.Storage;
 using LvlUp.Domain.Hunters;
 using LvlUp.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,9 @@ internal sealed class GetHunterQueryHandler(IApplicationDbContext context)
             Rank = hunter.Rank.ToString(),
             HasCompletedAssessment = hunter.HasCompletedAssessment,
             GitHubUsername = hunter.GitHubUsername,
+            AvatarUrl = hunter.AvatarPath is null
+                ? null
+                : $"{StoragePaths.PublicRequestPath}/{hunter.AvatarPath}",
             Stats = new HunterStatsResponse(
                 hunter.Stats.Strength,
                 hunter.Stats.Stamina,

@@ -20,6 +20,10 @@ public static class HunterErrors
         "Hunters.AssessmentUnavailable",
         "The awakening assessment is only available before any XP has been earned.");
 
+    public static readonly Error UnsupportedAvatarType = Error.Problem(
+        "Hunters.UnsupportedAvatarType",
+        "The avatar must be a JPEG, PNG or WebP image.");
+
     public static readonly Error GitHubUsernameNotConfigured = Error.Problem(
         "Hunters.GitHubUsernameNotConfigured",
         "A GitHub username must be configured before completing GitHub-verified quests.");

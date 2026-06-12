@@ -41,6 +41,9 @@ public sealed class Hunter : Entity
 
     public string? GitHubUsername { get; private set; }
 
+    /// <summary>Storage-relative path of the avatar image; the file itself lives in external storage.</summary>
+    public string? AvatarPath { get; private set; }
+
     public bool HasCompletedAssessment => AssessedAtUtc is not null;
 
     public int XpForNextLevel => Level * XpPerLevelFactor;
@@ -118,6 +121,9 @@ public sealed class Hunter : Entity
 
     /// <summary>Maps a 1-5 self-assessment score onto a starting stat of 6-14.</summary>
     public static int StatValueForScore(int score) => 4 + (score * 2);
+
+    public void SetAvatarPath(string? avatarPath) =>
+        AvatarPath = string.IsNullOrWhiteSpace(avatarPath) ? null : avatarPath.Trim();
 
     public void SetGitHubUsername(string? username) =>
         GitHubUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim();

@@ -41,5 +41,7 @@ public sealed record HunterResponse
 
     public required string? GitHubUsername { get; init; }
 
+    public required string? AvatarUrl { get; init; }
+
     public required HunterStatsResponse Stats { get; init; }
 }

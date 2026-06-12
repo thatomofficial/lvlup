@@ -1,6 +1,8 @@
 using LvlUp.Api;
 using LvlUp.Api.Extensions;
 using LvlUp.Application;
+using LvlUp.Application.Abstractions.Storage;
+using Microsoft.Extensions.FileProviders;
 using LvlUp.Infrastructure;
 using Serilog;
 
@@ -31,6 +33,15 @@ if (app.Environment.IsEnvironment("Local"))
 }
 
 app.UseExceptionHandler();
+
+// Serve externally stored files (avatars) from the configured storage root.
+string storageRoot = Path.GetFullPath(app.Configuration["Storage:Root"] ?? "storage");
+Directory.CreateDirectory(storageRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(storageRoot),
+    RequestPath = StoragePaths.PublicRequestPath,
+});
 
 app.UseSerilogRequestLogging();
 
