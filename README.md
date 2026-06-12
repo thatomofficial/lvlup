@@ -37,6 +37,10 @@ SharedKernel  ←  Domain  ←  Application  ←  Infrastructure  ←  Api
   `.Match(Results.Ok, CustomResults.Problem)` → RFC 7807 problem details by `ErrorType`.
 - **Minimal API endpoints** — each is an `internal sealed class : IEndpoint`, reflection-scanned and
   mapped at startup; `.HasPermission(Permissions.X)` for authz, `.WithTags(Tags.X)` for OpenAPI.
+- **Data gateways** — read-heavy/aggregating queries go through raw-SQL gateways
+  (parameterized `FormattableString` + `Database.SqlQuery<T>`): the interface + row DTO live next
+  to the feature in Application, the implementation in `Infrastructure/DataGateways/`
+  (e.g. `ConsistencyDataGateway` aggregates per-day completion counts in PostgreSQL).
 - **Domain** — entities inherit `Entity` (domain events via `Raise()`); EF configs via
   `ApplyConfigurationsFromAssembly`; events dispatched after `SaveChanges` (eventual consistency).
 - **Auth** — JWT bearer (register/login issue tokens); `IUserContext.UserId` from claims;

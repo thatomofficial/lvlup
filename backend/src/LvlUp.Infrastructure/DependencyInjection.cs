@@ -3,7 +3,9 @@ using LvlUp.Application.Abstractions.Authentication;
 using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Events;
 using LvlUp.Application.Abstractions.Integrations;
+using LvlUp.Application.Hunters.GetConsistency;
 using LvlUp.Infrastructure.Authentication;
+using LvlUp.Infrastructure.DataGateways;
 using LvlUp.Infrastructure.Integrations;
 using LvlUp.Infrastructure.Authorization;
 using LvlUp.Infrastructure.Database;
@@ -67,6 +69,8 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IDomainEventsDispatcher, DomainEventsDispatcher>();
+
+        services.AddScoped<IConsistencyDataGateway, ConsistencyDataGateway>();
 
         return services;
     }

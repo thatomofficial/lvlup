@@ -6,7 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LvlUp.Application.Hunters.GetConsistency;
 
-internal sealed class GetConsistencyQueryHandler(IApplicationDbContext context, TimeProvider timeProvider)
+internal sealed class GetConsistencyQueryHandler(
+    IApplicationDbContext context,
+    IConsistencyDataGateway consistencyDataGateway,
+    TimeProvider timeProvider)
     : IQueryHandler<GetConsistencyQuery, ConsistencyResponse>
 {
     private const int HeatmapDays = 84;
@@ -25,17 +28,12 @@ internal sealed class GetConsistencyQueryHandler(IApplicationDbContext context, 
             return Result.Failure<ConsistencyResponse>(HunterErrors.NotFound(query.HunterId));
         }
 
-        List<DateTime> completionTimes = await context.QuestCompletions
-            .AsNoTracking()
-            .Where(completion => completion.HunterId == query.HunterId)
-            .Select(completion => completion.CompletedAtUtc)
-            .ToListAsync(cancellationToken);
+        IReadOnlyList<DailyCompletionRow> dailyCompletions =
+            await consistencyDataGateway.GetDailyCompletionCountsAsync(query.HunterId, cancellationToken);
 
         DateOnly today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
-        var completionsPerDay = completionTimes
-            .GroupBy(DateOnly.FromDateTime)
-            .ToDictionary(group => group.Key, group => group.Count());
+        var completionsPerDay = dailyCompletions.ToDictionary(row => row.Day, row => row.Completions);
 
         HashSet<DateOnly> activeDays = [.. completionsPerDay.Keys];
 
