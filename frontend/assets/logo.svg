@@ -34,11 +34,11 @@
            fill="none" stroke="url(#frame)" stroke-width="5"
            stroke-linejoin="round" opacity="0.35"/>
 
-  <!-- Level-up chevrons -->
-  <path d="M 362 560 L 512 410 L 662 560"
+  <!-- Level-up chevrons, vertically centered on the hexagon midpoint (512) -->
+  <path d="M 362 517 L 512 367 L 662 517"
         fill="none" stroke="url(#chevron)" stroke-width="54"
         stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-  <path d="M 362 700 L 512 550 L 662 700"
+  <path d="M 362 657 L 512 507 L 662 657"
         fill="none" stroke="url(#chevron)" stroke-width="54"
         stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.55"/>
 </svg>
