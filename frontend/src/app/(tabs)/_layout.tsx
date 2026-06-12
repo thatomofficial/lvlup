@@ -32,8 +32,12 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'STATUS',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'stats-chart' : 'stats-chart-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -41,8 +45,12 @@ export default function TabsLayout() {
         name="quests"
         options={{
           title: 'QUESTS',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'flash' : 'flash-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -50,8 +58,12 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'PROFILE',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'person' : 'person-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
