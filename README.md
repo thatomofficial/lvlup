@@ -212,6 +212,7 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |
 | POST | `/hunters/me/assessment` | ✓ | `{ scores: { Strength: 1-5, … } }` (all 7) → starting stats + recommended difficulties; 409 if repeated or XP > 0 |
 | POST | `/quests/starter-pack` | ✓ | Creates the starter habit quests calibrated to current stats; idempotent |
+| GET | `/hunters/me/badges` | ✓ | 28 badges (7 categories × 4 tiers), earned by completion counts: Iron 5 / Steel 25 / Mythril 75 / Monarch 200 |
 | GET | `/hunters/me/consistency` | ✓ | Streaks, shields, discipline score, 84-day heatmap |
 | PUT | `/hunters/me/github` | ✓ | `{ username }` (null to unlink) → 204 |
 | GET | `/quests` | ✓ | All quests with computed `isCompleted` |

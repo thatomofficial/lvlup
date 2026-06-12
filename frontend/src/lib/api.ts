@@ -3,6 +3,7 @@ import type {
   AssessmentResult,
   AssessmentScores,
   AuthResponse,
+  Badge,
   CompleteQuestResult,
   Consistency,
   CreateQuestRequest,
@@ -220,6 +221,10 @@ export const api = {
 
   getConsistency(token: string): Promise<Consistency> {
     return request<Consistency>('/hunters/me/consistency', { token });
+  },
+
+  getBadges(token: string): Promise<Badge[]> {
+    return request<Badge[]>('/hunters/me/badges', { token });
   },
 
   updateGitHubUsername(token: string, username: string | null): Promise<void> {

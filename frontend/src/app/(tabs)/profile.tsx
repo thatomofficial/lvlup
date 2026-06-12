@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BadgesPanel } from '../../components/BadgesPanel';
 import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
 import { colors } from '../../constants/theme';
@@ -22,6 +23,7 @@ import type { DisplayNamePreference } from '../../lib/types';
 export default function ProfileScreen() {
   const { token, hunter, refreshHunter, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [savingPreference, setSavingPreference] = useState(false);
   const [editingGitHub, setEditingGitHub] = useState(false);
   const [gitHubDraft, setGitHubDraft] = useState('');
@@ -30,6 +32,7 @@ export default function ProfileScreen() {
     setRefreshing(true);
     try {
       await refreshHunter();
+      setRefreshKey((key) => key + 1);
     } finally {
       setRefreshing(false);
     }
@@ -100,6 +103,8 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </GlowPanel>
+
+            <BadgesPanel token={token} refreshKey={refreshKey} />
 
             <GlowPanel style={styles.panel}>
               <Text style={styles.sectionTitle}>SETTINGS</Text>

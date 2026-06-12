@@ -58,6 +58,18 @@ export interface StarterPackResult {
   skippedCount: number;
 }
 
+export type BadgeTier = 'Iron' | 'Steel' | 'Mythril' | 'Monarch';
+
+export interface Badge {
+  category: QuestCategory;
+  tier: BadgeTier;
+  name: string;
+  requiredCompletions: number;
+  completionsInCategory: number;
+  isEarned: boolean;
+  progressPercent: number;
+}
+
 export interface Quest {
   id: string;
   title: string;
