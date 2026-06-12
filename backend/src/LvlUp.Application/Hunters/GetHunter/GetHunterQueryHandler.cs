@@ -34,6 +34,7 @@ internal sealed class GetHunterQueryHandler(IApplicationDbContext context)
             XpForNextLevel = hunter.XpForNextLevel,
             TotalXp = hunter.TotalXp,
             Rank = hunter.Rank.ToString(),
+            HasCompletedAssessment = hunter.HasCompletedAssessment,
             Stats = new HunterStatsResponse(
                 hunter.Strength,
                 hunter.Stamina,

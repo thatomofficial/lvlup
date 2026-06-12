@@ -47,6 +47,12 @@ SharedKernel  ←  Domain  ←  Application  ←  Infrastructure  ←  Api
 
 ## Game rules
 
+- **Awakening assessment** — new hunters answer 7 self-assessment questions (one per stat,
+  scored 1–5) before entering the app. Scores set the *starting* stats (`4 + 2×score`, so 6–14
+  instead of a flat 10), and the starter quest pack is calibrated to them: stat ≤ 8 → Easy
+  quests, 9–11 → Medium, ≥ 12 → Hard. You start at your level, not above it. One-time only,
+  and unavailable once any XP has been earned.
+
 - XP to next level: `level × 100`. Excess XP carries over; multiple level-ups in one gain are possible.
 - Rank by level: E (<10), D (10+), C (20+), B (30+), A (40+), S (50+).
 - Quest difficulty → rewards: Easy +10 XP/+1 stat, Medium +25/+2, Hard +50/+3, Elite +100/+5.
@@ -188,6 +194,8 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | POST | `/auth/login` | — | `{ email, password }` → `{ token, hunterId }` |
 | GET | `/hunters/me` | ✓ | Hunter status: names, displayName, level, XP, rank, five stats |
 | PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |
+| POST | `/hunters/me/assessment` | ✓ | `{ scores: { Strength: 1-5, … } }` (all 7) → starting stats + recommended difficulties; 409 if repeated or XP > 0 |
+| POST | `/quests/starter-pack` | ✓ | Creates the starter habit quests calibrated to current stats; idempotent |
 | GET | `/quests` | ✓ | All quests with computed `isCompleted` |
 | POST | `/quests` | ✓ | `{ title, description?, category, difficulty, type }` → `{ id }` |
 | POST | `/quests/{id}/complete` | ✓ | Awards XP + stat; 409 if already completed |

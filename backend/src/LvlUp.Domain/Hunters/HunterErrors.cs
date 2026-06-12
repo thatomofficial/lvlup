@@ -12,6 +12,14 @@ public static class HunterErrors
         "Hunters.UsernameNotUnique",
         "A hunter with the provided username already exists.");
 
+    public static readonly Error AlreadyAssessed = Error.Conflict(
+        "Hunters.AlreadyAssessed",
+        "The awakening assessment has already been completed.");
+
+    public static readonly Error AssessmentUnavailable = Error.Conflict(
+        "Hunters.AssessmentUnavailable",
+        "The awakening assessment is only available before any XP has been earned.");
+
     public static readonly Error InvalidCredentials = Error.Unauthorized(
         "Hunters.InvalidCredentials",
         "The provided credentials are invalid.");

@@ -1,4 +1,5 @@
 using LvlUp.Domain.Hunters;
+using LvlUp.SharedKernel;
 using Shouldly;
 
 namespace LvlUp.UnitTests.Domain;
@@ -170,6 +171,81 @@ public class HunterTests
 
         Should.Throw<ArgumentOutOfRangeException>(() => hunter.IncreaseStat(StatCategory.Strength, -1));
     }
+
+    [Theory]
+    [InlineData(1, 6)]
+    [InlineData(2, 8)]
+    [InlineData(3, 10)]
+    [InlineData(4, 12)]
+    [InlineData(5, 14)]
+    public void StatValueForScore_Should_MapScoreOntoStartingStat(int score, int expectedStat)
+    {
+        Hunter.StatValueForScore(score).ShouldBe(expectedStat);
+    }
+
+    [Fact]
+    public void ApplyAssessment_Should_SetStatsFromScores()
+    {
+        Hunter hunter = CreateHunter();
+
+        hunter.ApplyAssessment(CreateScores(charisma: 1, strength: 5), UtcNow);
+
+        hunter.ShouldSatisfyAllConditions(
+            h => h.Charisma.ShouldBe(6),
+            h => h.Strength.ShouldBe(14));
+    }
+
+    [Fact]
+    public void ApplyAssessment_Should_MarkAssessmentAsCompleted()
+    {
+        Hunter hunter = CreateHunter();
+
+        hunter.ApplyAssessment(CreateScores(), UtcNow);
+
+        hunter.HasCompletedAssessment.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ApplyAssessment_Should_Fail_WhenAlreadyAssessed()
+    {
+        Hunter hunter = CreateHunter();
+        hunter.ApplyAssessment(CreateScores(), UtcNow);
+
+        Result result = hunter.ApplyAssessment(CreateScores(), UtcNow);
+
+        result.Error.ShouldBe(HunterErrors.AlreadyAssessed);
+    }
+
+    [Fact]
+    public void ApplyAssessment_Should_Fail_WhenHunterAlreadyHasXp()
+    {
+        Hunter hunter = CreateHunter();
+        hunter.GainXp(10);
+
+        Result result = hunter.ApplyAssessment(CreateScores(), UtcNow);
+
+        result.Error.ShouldBe(HunterErrors.AssessmentUnavailable);
+    }
+
+    [Fact]
+    public void ApplyAssessment_Should_Throw_WhenScoreIsOutOfRange()
+    {
+        Hunter hunter = CreateHunter();
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
+            hunter.ApplyAssessment(CreateScores(strength: 6), UtcNow));
+    }
+
+    private static Dictionary<StatCategory, int> CreateScores(int strength = 3, int charisma = 3) => new()
+    {
+        [StatCategory.Strength] = strength,
+        [StatCategory.Stamina] = 3,
+        [StatCategory.Physique] = 3,
+        [StatCategory.Looks] = 3,
+        [StatCategory.WellBeing] = 3,
+        [StatCategory.Intelligence] = 3,
+        [StatCategory.Charisma] = charisma,
+    };
 
     [Theory]
     [InlineData(1, HunterRank.E)]

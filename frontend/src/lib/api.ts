@@ -1,11 +1,14 @@
 import { API_BASE_URL } from '../constants/api';
 import type {
+  AssessmentResult,
+  AssessmentScores,
   AuthResponse,
   CompleteQuestResult,
   CreateQuestRequest,
   DisplayNamePreference,
   Hunter,
   Quest,
+  StarterPackResult,
 } from './types';
 
 /** RFC 7807 validation error entry. */
@@ -168,6 +171,24 @@ export const api = {
     return request<void>('/hunters/me/display-preference', {
       method: 'PUT',
       body: { preference },
+      token,
+    });
+  },
+
+  submitAssessment(
+    token: string,
+    scores: AssessmentScores,
+  ): Promise<AssessmentResult> {
+    return request<AssessmentResult>('/hunters/me/assessment', {
+      method: 'POST',
+      body: { scores },
+      token,
+    });
+  },
+
+  createStarterPack(token: string): Promise<StarterPackResult> {
+    return request<StarterPackResult>('/quests/starter-pack', {
+      method: 'POST',
       token,
     });
   },

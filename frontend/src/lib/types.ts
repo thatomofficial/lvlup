@@ -38,7 +38,21 @@ export interface Hunter {
   xpForNextLevel: number;
   totalXp: number;
   rank: Rank;
+  hasCompletedAssessment: boolean;
   stats: HunterStats;
+}
+
+/** 1-5 self-assessment score per stat category. */
+export type AssessmentScores = Record<QuestCategory, number>;
+
+export interface AssessmentResult {
+  stats: HunterStats;
+  recommendedDifficulties: Record<QuestCategory, QuestDifficulty>;
+}
+
+export interface StarterPackResult {
+  createdCount: number;
+  skippedCount: number;
 }
 
 export interface Quest {

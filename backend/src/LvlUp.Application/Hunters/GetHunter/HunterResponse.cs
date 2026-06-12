@@ -37,5 +37,7 @@ public sealed record HunterResponse
 
     public required string Rank { get; init; }
 
+    public required bool HasCompletedAssessment { get; init; }
+
     public required HunterStatsResponse Stats { get; init; }
 }

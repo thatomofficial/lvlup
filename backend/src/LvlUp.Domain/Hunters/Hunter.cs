@@ -6,6 +6,8 @@ public sealed class Hunter : Entity
 {
     public const int BaseStatValue = 10;
     public const int XpPerLevelFactor = 100;
+    public const int MinAssessmentScore = 1;
+    public const int MaxAssessmentScore = 5;
 
     private Hunter()
     {
@@ -46,6 +48,10 @@ public sealed class Hunter : Entity
     public int Charisma { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
+
+    public DateTime? AssessedAtUtc { get; private set; }
+
+    public bool HasCompletedAssessment => AssessedAtUtc is not null;
 
     public int XpForNextLevel => Level * XpPerLevelFactor;
 
@@ -90,6 +96,84 @@ public sealed class Hunter : Entity
         Charisma = BaseStatValue,
         CreatedAtUtc = utcNow,
     };
+
+    public int GetStat(StatCategory category) => category switch
+    {
+        StatCategory.Strength => Strength,
+        StatCategory.Stamina => Stamina,
+        StatCategory.Physique => Physique,
+        StatCategory.Looks => Looks,
+        StatCategory.WellBeing => WellBeing,
+        StatCategory.Intelligence => Intelligence,
+        StatCategory.Charisma => Charisma,
+        _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category."),
+    };
+
+    /// <summary>
+    /// Applies the one-time awakening self-assessment: each category score (1-5)
+    /// sets the starting stat so new hunters begin at their actual level.
+    /// </summary>
+    public Result ApplyAssessment(IReadOnlyDictionary<StatCategory, int> scores, DateTime utcNow)
+    {
+        ArgumentNullException.ThrowIfNull(scores);
+
+        if (HasCompletedAssessment)
+        {
+            return Result.Failure(HunterErrors.AlreadyAssessed);
+        }
+
+        if (TotalXp > 0)
+        {
+            return Result.Failure(HunterErrors.AssessmentUnavailable);
+        }
+
+        foreach ((StatCategory category, int score) in scores)
+        {
+            if (score is < MinAssessmentScore or > MaxAssessmentScore)
+            {
+                throw new ArgumentOutOfRangeException(nameof(scores), score, "Assessment scores must be between 1 and 5.");
+            }
+
+            SetStat(category, StatValueForScore(score));
+        }
+
+        AssessedAtUtc = utcNow;
+
+        return Result.Success();
+    }
+
+    /// <summary>Maps a 1-5 self-assessment score onto a starting stat of 6-14.</summary>
+    public static int StatValueForScore(int score) => 4 + (score * 2);
+
+    private void SetStat(StatCategory category, int value)
+    {
+        switch (category)
+        {
+            case StatCategory.Strength:
+                Strength = value;
+                break;
+            case StatCategory.Stamina:
+                Stamina = value;
+                break;
+            case StatCategory.Physique:
+                Physique = value;
+                break;
+            case StatCategory.Looks:
+                Looks = value;
+                break;
+            case StatCategory.WellBeing:
+                WellBeing = value;
+                break;
+            case StatCategory.Intelligence:
+                Intelligence = value;
+                break;
+            case StatCategory.Charisma:
+                Charisma = value;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown stat category.");
+        }
+    }
 
     public void SetDisplayNamePreference(DisplayNamePreference preference)
     {
