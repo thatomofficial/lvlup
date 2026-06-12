@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,15 +19,18 @@ import { GlowPanel } from '../../components/GlowPanel';
 import { LevelUpModal } from '../../components/LevelUpModal';
 import { QuestCard } from '../../components/QuestCard';
 import { XpToast } from '../../components/XpToast';
-import { colors } from '../../constants/theme';
+import type { ThemeColors } from '../../constants/theme';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { useTheme } from '../../lib/theme';
 import type { Quest } from '../../lib/types';
 
 /** Tab 2 — the quest log. */
 export default function QuestsScreen() {
   const router = useRouter();
   const { token, refreshHunter } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -238,7 +241,7 @@ export default function QuestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

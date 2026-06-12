@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface StatRowProps {
   label: string;
@@ -12,6 +13,8 @@ interface StatRowProps {
 const STAT_BAR_MAX = 100;
 
 export function StatRow({ label, value }: StatRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const percent = Math.min(100, Math.max(0, (value / STAT_BAR_MAX) * 100));
 
   return (
@@ -25,7 +28,7 @@ export function StatRow({ label, value }: StatRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

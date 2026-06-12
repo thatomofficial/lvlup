@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -13,12 +13,15 @@ import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
 import { StatRow } from '../../components/StatRow';
 import { XpBar } from '../../components/XpBar';
-import { categoryLabels, colors } from '../../constants/theme';
+import { categoryLabels, type ThemeColors } from '../../constants/theme';
 import { useAuth } from '../../lib/auth';
+import { useTheme } from '../../lib/theme';
 
 /** Tab 1 — the Solo Leveling style STATUS WINDOW. */
 export default function StatusScreen() {
   const { token, hunter, refreshHunter } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -121,7 +124,7 @@ export default function StatusScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface OptionSelectorProps<T extends string> {
   label: string;
@@ -20,6 +21,9 @@ export function OptionSelector<T extends string>({
   onChange,
   renderLabel,
 }: OptionSelectorProps<T>) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label.toUpperCase()}</Text>
@@ -46,7 +50,7 @@ export function OptionSelector<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     marginBottom: 16,
   },

@@ -2,13 +2,15 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
-import { colors } from '../constants/theme';
 import { AuthProvider } from '../lib/auth';
+import { ThemeProvider, useTheme } from '../lib/theme';
 
-export default function RootLayout() {
+function RootNavigator() {
+  const { colors, mode } = useTheme();
+
   return (
-    <AuthProvider>
-      <StatusBar style="light" />
+    <>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -24,6 +26,16 @@ export default function RootLayout() {
           options={{ presentation: 'modal' }}
         />
       </Stack>
-    </AuthProvider>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

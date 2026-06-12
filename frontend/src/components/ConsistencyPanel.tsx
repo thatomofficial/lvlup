@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
 import { api } from '../lib/api';
 import { heatLevel } from '../lib/heat';
+import { useTheme } from '../lib/theme';
 import type { Consistency, ConsistencyDay } from '../lib/types';
 import { GlowPanel } from './GlowPanel';
 
-const HEAT_COLORS = ['#10183A', '#0E4A6B', '#1B7FB8', '#38BDF8'] as const;
 const WEEK_DAYS = 7;
 
 interface ConsistencyPanelProps {
@@ -18,6 +18,8 @@ interface ConsistencyPanelProps {
 
 /** Streak, shields, discipline score and a 12-week completion heatmap. */
 export function ConsistencyPanel({ token, refreshKey }: ConsistencyPanelProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [consistency, setConsistency] = useState<Consistency | null>(null);
 
   useEffect(() => {
@@ -54,10 +56,23 @@ export function ConsistencyPanel({ token, refreshKey }: ConsistencyPanelProps) {
       <Text style={styles.sectionTitle}>CONSISTENCY</Text>
 
       <View style={styles.metricsRow}>
-        <Metric label="STREAK" value={`${consistency.currentStreak}d`} highlight />
-        <Metric label="BEST" value={`${consistency.longestStreak}d`} />
-        <Metric label="SHIELDS" value={'🛡'.repeat(consistency.shields) || '—'} />
-        <Metric label="DISCIPLINE" value={`${consistency.disciplineScore}%`} />
+        <Metric
+          styles={styles}
+          label="STREAK"
+          value={`${consistency.currentStreak}d`}
+          highlight
+        />
+        <Metric styles={styles} label="BEST" value={`${consistency.longestStreak}d`} />
+        <Metric
+          styles={styles}
+          label="SHIELDS"
+          value={'🛡'.repeat(consistency.shields) || '—'}
+        />
+        <Metric
+          styles={styles}
+          label="DISCIPLINE"
+          value={`${consistency.disciplineScore}%`}
+        />
       </View>
 
       <View style={styles.heatmap}>
@@ -68,7 +83,7 @@ export function ConsistencyPanel({ token, refreshKey }: ConsistencyPanelProps) {
                 key={day.date}
                 style={[
                   styles.dayCell,
-                  { backgroundColor: HEAT_COLORS[heatLevel(day.completions)] },
+                  { backgroundColor: colors.heat[heatLevel(day.completions)] },
                   day.shielded && styles.shieldedCell,
                 ]}
               />
@@ -82,10 +97,12 @@ export function ConsistencyPanel({ token, refreshKey }: ConsistencyPanelProps) {
 }
 
 function Metric({
+  styles,
   label,
   value,
   highlight = false,
 }: {
+  styles: ReturnType<typeof createStyles>;
   label: string;
   value: string;
   highlight?: boolean;
@@ -100,7 +117,7 @@ function Metric({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   panel: {
     marginBottom: 16,
   },

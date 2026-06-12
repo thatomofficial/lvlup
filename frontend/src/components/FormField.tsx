@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,13 +7,17 @@ import {
   type TextInputProps,
 } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface FormFieldProps extends TextInputProps {
   label: string;
 }
 
 export function FormField({ label, style, ...inputProps }: FormFieldProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label.toUpperCase()}</Text>
@@ -26,7 +30,7 @@ export function FormField({ label, style, ...inputProps }: FormFieldProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     marginBottom: 16,
   },

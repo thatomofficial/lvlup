@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -12,9 +12,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlowPanel } from '../components/GlowPanel';
 import { NeonButton } from '../components/NeonButton';
 import { StatRow } from '../components/StatRow';
-import { categoryLabels, colors } from '../constants/theme';
+import { categoryLabels, type ThemeColors } from '../constants/theme';
 import { api, ApiError } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useTheme } from '../lib/theme';
 import type { AssessmentResult, QuestCategory } from '../lib/types';
 
 interface Question {
@@ -65,6 +66,8 @@ const QUESTIONS: readonly Question[] = [
 export default function AssessmentScreen() {
   const router = useRouter();
   const { token, refreshHunter } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [scores, setScores] = useState<Partial<Record<QuestCategory, number>>>({});
   const [result, setResult] = useState<AssessmentResult | null>(null);
@@ -209,7 +212,7 @@ function statKey(category: QuestCategory): keyof AssessmentResult['stats'] {
   }
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 import { xpLabel, xpPercent } from '../lib/xp';
 
 interface XpBarProps {
@@ -11,6 +12,8 @@ interface XpBarProps {
 
 /** Glowing XP progress bar with "current / next" label. */
 export function XpBar({ currentXp, xpForNextLevel }: XpBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const percent = xpPercent(currentXp, xpForNextLevel);
 
   return (
@@ -26,7 +29,7 @@ export function XpBar({ currentXp, xpForNextLevel }: XpBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

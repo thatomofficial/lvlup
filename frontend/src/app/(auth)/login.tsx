@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,12 +12,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField } from '../../components/FormField';
 import { GlowPanel } from '../../components/GlowPanel';
 import { NeonButton } from '../../components/NeonButton';
-import { colors } from '../../constants/theme';
+import type { ThemeColors } from '../../constants/theme';
 import { ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { useTheme } from '../../lib/theme';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +100,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
 import { rankColor } from '../lib/ranks';
+import { useTheme } from '../lib/theme';
 
 interface RankBadgeProps {
   rank: string;
@@ -11,6 +12,8 @@ interface RankBadgeProps {
 
 /** Color-coded hunter rank badge (E gray → S gold). */
 export function RankBadge({ rank, size = 84 }: RankBadgeProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const color = rankColor(rank);
 
   return (
@@ -34,7 +37,7 @@ export function RankBadge({ rank, size = 84 }: RankBadgeProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   badge: {
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface GlowPanelProps {
   children: React.ReactNode;
@@ -10,10 +11,13 @@ interface GlowPanelProps {
 
 /** Dark panel with the glowing blue border used across the "system window" UI. */
 export function GlowPanel({ children, style }: GlowPanelProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return <View style={[styles.panel, style]}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   panel: {
     backgroundColor: colors.surface,
     borderWidth: 1,

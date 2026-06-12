@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,9 +14,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField } from '../components/FormField';
 import { NeonButton } from '../components/NeonButton';
 import { OptionSelector } from '../components/OptionSelector';
-import { categoryLabels, colors } from '../constants/theme';
+import { categoryLabels, type ThemeColors } from '../constants/theme';
 import { api, ApiError } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useTheme } from '../lib/theme';
 import type { QuestCategory, QuestDifficulty, QuestType } from '../lib/types';
 
 const CATEGORIES: readonly QuestCategory[] = [
@@ -47,6 +48,8 @@ const DIFFICULTY_HINTS: Record<QuestDifficulty, string> = {
 export default function AddQuestScreen() {
   const router = useRouter();
   const { token } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -175,7 +178,7 @@ export default function AddQuestScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,7 +7,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface NeonButtonProps {
   title: string;
@@ -26,6 +27,8 @@ export function NeonButton({
   variant = 'solid',
   style,
 }: NeonButtonProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isDisabled = disabled || loading;
 
   return (
@@ -58,7 +61,7 @@ export function NeonButton({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   base: {
     borderRadius: 8,
     paddingVertical: 14,

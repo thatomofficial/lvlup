@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -10,7 +10,8 @@ import {
   View,
 } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 import type { Quest } from '../lib/types';
 import { NeonButton } from './NeonButton';
 
@@ -25,6 +26,8 @@ interface CompleteQuestModalProps {
  * note ("what did you actually do?") stored on the completion record.
  */
 export function CompleteQuestModal({ quest, onConfirm, onCancel }: CompleteQuestModalProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [note, setNote] = useState('');
 
   const handleConfirm = () => {
@@ -79,7 +82,7 @@ export function CompleteQuestModal({ quest, onConfirm, onCancel }: CompleteQuest
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(2, 4, 12, 0.85)',

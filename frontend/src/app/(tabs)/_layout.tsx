@@ -2,11 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
 
-import { colors } from '../../constants/theme';
 import { useAuth } from '../../lib/auth';
+import { useTheme } from '../../lib/theme';
 
 export default function TabsLayout() {
   const { token, isLoading } = useAuth();
+  const { colors } = useTheme();
 
   // Guard: unauthenticated users never see the tabs.
   if (!isLoading && !token) {

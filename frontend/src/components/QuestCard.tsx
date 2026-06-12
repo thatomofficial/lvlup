@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,7 +8,12 @@ import {
   View,
 } from 'react-native';
 
-import { categoryLabels, colors, difficultyColors } from '../constants/theme';
+import {
+  categoryLabels,
+  difficultyColors,
+  type ThemeColors,
+} from '../constants/theme';
+import { useTheme } from '../lib/theme';
 import type { Quest } from '../lib/types';
 import { Chip } from './Chip';
 
@@ -25,6 +30,8 @@ export function QuestCard({
   onComplete,
   onDelete,
 }: QuestCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const done = quest.isCompleted;
   const completeLabel = done
     ? quest.type === 'Daily'
@@ -101,7 +108,7 @@ export function QuestCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderWidth: 1,

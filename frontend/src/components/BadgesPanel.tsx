@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { categoryLabels, colors } from '../constants/theme';
+import { categoryLabels, type ThemeColors } from '../constants/theme';
 import { api } from '../lib/api';
+import { useTheme } from '../lib/theme';
 import type { Badge, BadgeTier, QuestCategory } from '../lib/types';
 import { GlowPanel } from './GlowPanel';
 
@@ -28,6 +29,8 @@ interface BadgesPanelProps {
 
 /** Per-category badge lines: four tiers earned by quest completions. */
 export function BadgesPanel({ token, refreshKey }: BadgesPanelProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [badges, setBadges] = useState<Badge[] | null>(null);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ export function BadgesPanel({ token, refreshKey }: BadgesPanelProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   panel: {
     marginBottom: 16,
   },

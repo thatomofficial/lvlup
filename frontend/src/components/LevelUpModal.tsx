@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   Modal,
@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface LevelUpModalProps {
   visible: boolean;
@@ -18,6 +19,8 @@ interface LevelUpModalProps {
 
 /** Solo Leveling style "ding!" celebration shown when the hunter levels up. */
 export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const scale = useRef(new Animated.Value(0.6)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -60,7 +63,7 @@ export function LevelUpModal({ visible, newLevel, onClose }: LevelUpModalProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(2, 4, 12, 0.85)',

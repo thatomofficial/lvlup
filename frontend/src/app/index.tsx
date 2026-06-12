@@ -1,13 +1,16 @@
 import { Redirect } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
 import { useAuth } from '../lib/auth';
+import { useTheme } from '../lib/theme';
 
 /** Entry route: waits for session restore, then routes to auth, awakening or tabs. */
 export default function Index() {
   const { token, hunter, isLoading } = useAuth();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   if (isLoading) {
     return (
@@ -29,7 +32,7 @@ export default function Index() {
   return <Redirect href={needsAssessment ? '/assessment' : '/(tabs)'} />;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

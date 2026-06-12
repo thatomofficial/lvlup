@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
 
-import { colors } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
+import { useTheme } from '../lib/theme';
 
 interface XpToastProps {
   message: string | null;
@@ -12,6 +13,8 @@ const VISIBLE_MS = 1800;
 
 /** Floating "+XP" banner shown after completing a quest without leveling up. */
 export function XpToast({ message, onHide }: XpToastProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
 
@@ -66,7 +69,7 @@ export function XpToast({ message, onHide }: XpToastProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toast: {
     position: 'absolute',
     bottom: 96,

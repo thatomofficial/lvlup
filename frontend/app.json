@@ -6,7 +6,7 @@
     "scheme": "lvlup",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "backgroundColor": "#04060F",
     "ios": {

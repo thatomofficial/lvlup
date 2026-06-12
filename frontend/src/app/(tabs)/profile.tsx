@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -17,15 +17,24 @@ import { BadgesPanel } from '../../components/BadgesPanel';
 import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
 import { API_BASE_URL } from '../../constants/api';
-import { colors } from '../../constants/theme';
+import { type ThemeColors } from '../../constants/theme';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { getInitials } from '../../lib/initials';
+import { useTheme, type ThemePreference } from '../../lib/theme';
 import type { DisplayNamePreference } from '../../lib/types';
+
+const THEME_OPTIONS: readonly { value: ThemePreference; label: string }[] = [
+  { value: 'dark', label: 'DARK' },
+  { value: 'light', label: 'LIGHT' },
+  { value: 'system', label: 'SYSTEM' },
+];
 
 /** Tab 3 — hunter profile and account settings. */
 export default function ProfileScreen() {
   const { token, hunter, refreshHunter, signOut } = useAuth();
+  const { colors, preference, setPreference } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [savingPreference, setSavingPreference] = useState(false);
@@ -183,6 +192,27 @@ export default function ProfileScreen() {
               <Text style={styles.sectionTitle}>SETTINGS</Text>
 
               <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>THEME</Text>
+                {THEME_OPTIONS.map((option) => {
+                  const selected = preference === option.value;
+                  return (
+                    <Pressable
+                      key={option.value}
+                      onPress={() => setPreference(option.value)}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                      accessibilityState={{ selected }}
+                    >
+                      <Text
+                        style={[styles.chipText, selected && styles.chipTextSelected]}
+                      >
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.settingRow}>
                 <Text style={styles.settingLabel}>DISPLAY</Text>
                 {(
                   [
@@ -280,7 +310,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,
