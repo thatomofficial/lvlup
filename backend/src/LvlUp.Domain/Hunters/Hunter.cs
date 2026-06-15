@@ -8,6 +8,7 @@ public sealed class Hunter : Entity
     public const int XpPerLevelFactor = 100;
     public const int MinAssessmentScore = 1;
     public const int MaxAssessmentScore = 5;
+    public const int MaxPasswordResetAttempts = 5;
 
     private Hunter()
     {
@@ -43,6 +44,13 @@ public sealed class Hunter : Entity
 
     /// <summary>Storage-relative path of the avatar image; the file itself lives in external storage.</summary>
     public string? AvatarPath { get; private set; }
+
+    /// <summary>Hash of the active password-reset code; null when no reset is in progress.</summary>
+    public string? PasswordResetCodeHash { get; private set; }
+
+    public DateTime? PasswordResetCodeExpiresAtUtc { get; private set; }
+
+    public int PasswordResetFailedAttempts { get; private set; }
 
     public bool HasCompletedAssessment => AssessedAtUtc is not null;
 
@@ -124,6 +132,42 @@ public sealed class Hunter : Entity
 
     public void SetAvatarPath(string? avatarPath) =>
         AvatarPath = string.IsNullOrWhiteSpace(avatarPath) ? null : avatarPath.Trim();
+
+    /// <summary>Stores a freshly issued password-reset code (already hashed) and its expiry.</summary>
+    public void RequestPasswordReset(string codeHash, DateTime expiresAtUtc)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(codeHash);
+
+        PasswordResetCodeHash = codeHash;
+        PasswordResetCodeExpiresAtUtc = expiresAtUtc;
+        PasswordResetFailedAttempts = 0;
+    }
+
+    public bool IsPasswordResetActive(DateTime utcNow) =>
+        PasswordResetCodeHash is not null &&
+        PasswordResetCodeExpiresAtUtc is { } expiry &&
+        expiry > utcNow;
+
+    public void RecordFailedPasswordResetAttempt() => PasswordResetFailedAttempts++;
+
+    public bool HasExhaustedPasswordResetAttempts() =>
+        PasswordResetFailedAttempts >= MaxPasswordResetAttempts;
+
+    public void ClearPasswordReset()
+    {
+        PasswordResetCodeHash = null;
+        PasswordResetCodeExpiresAtUtc = null;
+        PasswordResetFailedAttempts = 0;
+    }
+
+    /// <summary>Sets a new password (already hashed) and clears the reset state.</summary>
+    public void CompletePasswordReset(string newPasswordHash)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newPasswordHash);
+
+        PasswordHash = newPasswordHash;
+        ClearPasswordReset();
+    }
 
     public void SetGitHubUsername(string? username) =>
         GitHubUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim();

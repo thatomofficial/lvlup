@@ -22,6 +22,7 @@ internal sealed class HunterConfiguration : IEntityTypeConfiguration<Hunter>
         builder.Property(hunter => hunter.PasswordHash).HasMaxLength(512);
         builder.Property(hunter => hunter.GitHubUsername).HasMaxLength(39);
         builder.Property(hunter => hunter.AvatarPath).HasMaxLength(260);
+        builder.Property(hunter => hunter.PasswordResetCodeHash).HasMaxLength(512);
 
         // Stats live in their own table, one row per hunter, keyed and
         // linked back by hunter_id.

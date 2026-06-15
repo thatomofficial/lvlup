@@ -3,11 +3,13 @@ using LvlUp.Application.Abstractions.Authentication;
 using LvlUp.Application.Abstractions.Data;
 using LvlUp.Application.Abstractions.Events;
 using LvlUp.Application.Abstractions.Integrations;
+using LvlUp.Application.Abstractions.Notifications;
 using LvlUp.Application.Abstractions.Storage;
 using LvlUp.Application.Hunters.GetBadges;
 using LvlUp.Application.Hunters.GetConsistency;
 using LvlUp.Infrastructure.Authentication;
 using LvlUp.Infrastructure.DataGateways;
+using LvlUp.Infrastructure.Notifications;
 using LvlUp.Infrastructure.Storage;
 using LvlUp.Infrastructure.Integrations;
 using LvlUp.Infrastructure.Authorization;
@@ -149,6 +151,8 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddSingleton<ITokenProvider, TokenProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IOtpGenerator, OtpGenerator>();
+        services.AddSingleton<IPasswordResetNotifier, LoggingPasswordResetNotifier>();
         services.AddScoped<IUserContext, UserContext>();
 
         return services;

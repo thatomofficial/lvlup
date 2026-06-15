@@ -141,6 +141,10 @@ export default function LoginScreen() {
               />
             ) : null}
 
+            <Link href="/(auth)/forgot-password" style={styles.link}>
+              <Text style={styles.linkAccent}>Forgot password?</Text>
+            </Link>
+
             <Link href="/(auth)/register" style={styles.link}>
               <Text style={styles.linkText}>
                 No account? <Text style={styles.linkAccent}>Awaken here</Text>

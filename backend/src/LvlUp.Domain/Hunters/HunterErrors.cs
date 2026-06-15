@@ -32,6 +32,10 @@ public static class HunterErrors
         "Hunters.InvalidSsoToken",
         "The Google sign-in token could not be verified.");
 
+    public static readonly Error InvalidPasswordResetCode = Error.Problem(
+        "Hunters.InvalidPasswordResetCode",
+        "The password reset code is invalid or has expired. Request a new one.");
+
     public static readonly Error InvalidCredentials = Error.Unauthorized(
         "Hunters.InvalidCredentials",
         "The provided credentials are invalid.");

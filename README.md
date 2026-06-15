@@ -48,6 +48,9 @@ SharedKernel  ←  Domain  ←  Application  ←  Infrastructure  ←  Api
   permissions to any authenticated hunter). **Google SSO** verifies the ID token via
   `IGoogleIdTokenVerifier` (Google tokeninfo endpoint, audience + verified-email checked) and
   find-or-creates the hunter by email; disabled and fail-closed until `Sso:Google:ClientId` is set.
+  **Password reset** issues a hashed 6-digit code (15-min expiry, 5-attempt limit, single-use)
+  delivered via `IPasswordResetNotifier` — the default adapter logs the code for local dev; swap in
+  a real email/SMS sender for production.
 - **Strict build** — `TreatWarningsAsErrors`, `AnalysisMode=All`, SonarAnalyzer; intentional
   rule relaxations are documented in `backend/.editorconfig`.
 
@@ -246,6 +249,8 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | POST | `/auth/register` | — | `{ email, password, name, surname, username }` → `{ token, hunterId }` |
 | POST | `/auth/login` | — | `{ email, password }` → `{ token, hunterId }` |
 | POST | `/auth/sso/google` | — | `{ idToken }` (Google ID token) → `{ token, hunterId }`; find-or-create by email, 401 if unverified |
+| POST | `/auth/password-reset/request` | — | `{ email }` → 204 always (no account enumeration); a 6-digit code is sent via `IPasswordResetNotifier` |
+| POST | `/auth/password-reset/confirm` | — | `{ email, code, newPassword }` → 204; 400 on invalid/expired/exhausted code (5-attempt limit, 15-min expiry, single-use) |
 | GET | `/app/config` | — | `{ minimumVersion, latestVersion }` — boot-time version gate |
 | GET | `/hunters/me` | ✓ | Hunter status: names, displayName, level, XP, rank, five stats |
 | PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |

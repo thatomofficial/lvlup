@@ -204,6 +204,20 @@ export const api = {
     });
   },
 
+  requestPasswordReset(email: string): Promise<void> {
+    return request<void>('/auth/password-reset/request', {
+      method: 'POST',
+      body: { email },
+    });
+  },
+
+  resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    return request<void>('/auth/password-reset/confirm', {
+      method: 'POST',
+      body: { email, code, newPassword },
+    });
+  },
+
   getAppConfig(): Promise<AppConfig> {
     return request<AppConfig>('/app/config');
   },
