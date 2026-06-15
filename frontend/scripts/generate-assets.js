@@ -1,11 +1,11 @@
 /**
- * Regenerates the PNG app assets from the master SVGs in assets/.
+ * Regenerates the PNG app assets from the master SVGs in src/assets/.
  * Run after editing any of the SVG sources: npm run generate-assets
  */
 const path = require('path');
 const sharp = require('sharp');
 
-const ASSETS = path.join(__dirname, '..', 'assets');
+const ASSETS = path.join(__dirname, '..', 'src', 'assets');
 
 const TARGETS = [
   { source: 'logo.svg', output: 'icon.png', size: 1024 },

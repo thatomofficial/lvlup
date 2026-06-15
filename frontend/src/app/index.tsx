@@ -129,7 +129,7 @@ export default function BootScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/icon.png')} style={styles.logo} />
+      <Image source={require('../assets/icon.png')} style={styles.logo} />
       <Text style={styles.title}>LVLUP</Text>
       <Text style={styles.subtitle}>SYSTEM BOOT</Text>
 

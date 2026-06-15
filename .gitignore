@@ -16,6 +16,12 @@ frontend/web-build/
 frontend/coverage/
 *.tsbuildinfo
 
+# Native build artifacts
+frontend/android/.kotlin/
+
+# IDE
+.idea/
+
 # OS
 .DS_Store
 Thumbs.db
