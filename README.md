@@ -140,7 +140,7 @@ SSO is wired end to end but dormant until you supply OAuth client IDs:
 2. Backend: set `Sso:Google:ClientId` (user secrets or `Sso__Google__ClientId` env var) to the
    **web** client id — that's the audience the API verifies.
 3. Frontend: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` in
-   `frontend/.env.development` (see the commented template there). The "Continue with Google"
+   `frontend/.env.local` (see `frontend/.env.example` for the template). The "Continue with Google"
    button appears once either is set.
 
 ## Running the frontend
@@ -196,18 +196,26 @@ dotnet user-secrets set "Jwt:Secret" "<your-secret>" --project backend/src/LvlUp
 
 ### Frontend
 
-The API base URL resolves from `EXPO_PUBLIC_API_URL` (inlined at bundle time), falling back to the
-platform-aware localhost default in `src/constants/api.ts` (`10.0.2.2:5180` on Android emulators).
+`EXPO_PUBLIC_APP_ENV` (`local` | `development` | `qa` | `production`, default `local`) selects the
+target, and `src/lib/env.ts` derives `API_BASE_URL` from it:
 
-| Environment | Source of `EXPO_PUBLIC_API_URL` | When it applies |
+- **local** — builds `http://<EXPO_PUBLIC_LOCAL_API_HOST>:<port>` (port defaults to 5180), or, when
+  no host is set, the platform default (`localhost`, or `10.0.2.2` on Android emulators).
+- **development / qa / production** — requires `EXPO_PUBLIC_API_URL` (fail-fast if missing).
+
+| Environment | How `APP_ENV` / URL is set | When it applies |
 | --- | --- | --- |
-| Development | `.env.development` (unset by default → localhost fallback) | `expo start` |
-| Staging | `eas.json` → `build.staging.env` | `eas build --profile staging` |
-| Production | `.env.production` or `eas.json` → `build.production.env` | `expo export`, `eas build --profile production` |
+| local | default; LAN host auto-written to `.env.local` by the prestart sync script | `expo start` |
+| development / qa / production | `eas.json` → `build.<profile>.env` | `eas build --profile <profile>` |
 
-`.env*.local` files are gitignored for machine-specific overrides (e.g. your LAN IP for
-physical-device testing). The committed `.env` files contain no secrets — only public URLs.
-Replace the `lvlup.example.com` placeholders with real origins when you have them.
+**LAN IP auto-sync** — `npm start` runs `scripts/sync-local-env.js` (a `prestart` hook) which
+detects your machine's current LAN IPv4 and writes `EXPO_PUBLIC_LOCAL_API_HOST` +
+`REACT_NATIVE_PACKAGER_HOSTNAME` into `.env.local` (gitignored). A physical device on the same
+WiFi then reaches Metro and the API with no hand-editing, even when your IP changes.
+
+`.env.example` is the committed template of every supported variable; copy lines into `.env.local`
+for machine-specific overrides. Committed `.env.*` files hold no secrets — only public placeholder
+URLs; replace the `lvlup.example.com` values with real origins when you have them.
 
 ## CI (GitHub Actions)
 

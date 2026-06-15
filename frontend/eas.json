@@ -5,17 +5,23 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_API_URL": "https://dev-api.lvlup.example.com"
+      }
     },
     "staging": {
       "distribution": "internal",
       "env": {
+        "EXPO_PUBLIC_APP_ENV": "qa",
         "EXPO_PUBLIC_API_URL": "https://staging-api.lvlup.example.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
         "EXPO_PUBLIC_API_URL": "https://api.lvlup.example.com"
       }
     }

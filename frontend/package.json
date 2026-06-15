@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "private": true,
   "scripts": {
+    "prestart": "node ./scripts/sync-local-env.js",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

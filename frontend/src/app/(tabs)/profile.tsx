@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BadgesPanel } from '../../components/BadgesPanel';
 import { GlowPanel } from '../../components/GlowPanel';
 import { RankBadge } from '../../components/RankBadge';
-import { API_BASE_URL } from '../../constants/api';
+import { API_BASE_URL } from '../../lib/env';
 import { type ThemeColors } from '../../constants/theme';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
