@@ -43,7 +43,8 @@
         {
           "photosPermission": "LvlUp uses your photos to set your hunter avatar."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": false

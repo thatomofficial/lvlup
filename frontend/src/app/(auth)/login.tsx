@@ -1,5 +1,7 @@
+import * as Google from 'expo-auth-session/providers/google';
 import { Link } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,14 +19,54 @@ import { ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useTheme } from '../../lib/theme';
 
+WebBrowser.maybeCompleteAuthSession();
+
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const SSO_CONFIGURED = Boolean(GOOGLE_WEB_CLIENT_ID ?? GOOGLE_ANDROID_CLIENT_ID);
+
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  // Hook must always run; the placeholder id is never used because the
+  // button is hidden until real client ids are configured.
+  const [googleRequest, googleResponse, promptGoogle] = Google.useIdTokenAuthRequest({
+    clientId: GOOGLE_WEB_CLIENT_ID ?? 'unconfigured.apps.googleusercontent.com',
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (googleResponse?.type !== 'success') {
+      if (googleResponse?.type === 'error' || googleResponse?.type === 'dismiss') {
+        setGoogleBusy(false);
+      }
+      return;
+    }
+    const idToken = googleResponse.params['id_token'];
+    if (!idToken) {
+      setGoogleBusy(false);
+      setError('Google sign-in did not return a token.');
+      return;
+    }
+    signInWithGoogle(idToken)
+      .catch((e: unknown) => {
+        setError(e instanceof ApiError ? e.message : 'Google sign-in failed.');
+      })
+      .finally(() => setGoogleBusy(false));
+  }, [googleResponse, signInWithGoogle]);
+
+  const handleGoogle = async () => {
+    setError(null);
+    setGoogleBusy(true);
+    await promptGoogle();
+  };
 
   const handleLogin = async () => {
     setError(null);
@@ -88,6 +130,17 @@ export default function LoginScreen() {
               loading={submitting}
             />
 
+            {SSO_CONFIGURED ? (
+              <NeonButton
+                title="CONTINUE WITH GOOGLE"
+                onPress={handleGoogle}
+                loading={googleBusy}
+                disabled={!googleRequest}
+                variant="outline"
+                style={styles.googleButton}
+              />
+            ) : null}
+
             <Link href="/(auth)/register" style={styles.link}>
               <Text style={styles.linkText}>
                 No account? <Text style={styles.linkAccent}>Awaken here</Text>
@@ -146,6 +199,9 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.danger,
     fontSize: 13,
     marginBottom: 12,
+  },
+  googleButton: {
+    marginTop: 12,
   },
   link: {
     marginTop: 18,

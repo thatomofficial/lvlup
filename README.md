@@ -45,7 +45,9 @@ SharedKernel  ←  Domain  ←  Application  ←  Infrastructure  ←  Api
   `ApplyConfigurationsFromAssembly`; events dispatched after `SaveChanges` (eventual consistency).
 - **Auth** — JWT bearer (register/login issue tokens); `IUserContext.UserId` from claims;
   permission-based authz via custom `PermissionAuthorizationPolicyProvider` (currently grants all
-  permissions to any authenticated hunter).
+  permissions to any authenticated hunter). **Google SSO** verifies the ID token via
+  `IGoogleIdTokenVerifier` (Google tokeninfo endpoint, audience + verified-email checked) and
+  find-or-creates the hunter by email; disabled and fail-closed until `Sso:Google:ClientId` is set.
 - **Strict build** — `TreatWarningsAsErrors`, `AnalysisMode=All`, SonarAnalyzer; intentional
   rule relaxations are documented in `backend/.editorconfig`.
 
@@ -113,6 +115,33 @@ OpenAPI document (Local/Development): `http://localhost:5180/openapi/v1.json`.
 cd backend
 dotnet test          # 12 architecture tests + 53 unit tests
 ```
+
+## Boot sequence (splash)
+
+On launch the app shows a "SYSTEM BOOT" splash (`src/app/index.tsx`) that runs the startup
+checks in order before routing:
+
+1. **Network link** — `expo-network` checks for an active connection; offline shows a Retry.
+2. **System version** — fetches `/app/config` and blocks with an update notice if the build is
+   below `minimumVersion` (config fetch failures are non-blocking).
+3. **Authentication** — restores the persisted session and drops it locally if the JWT `exp` has
+   passed (no wasted round trip; `src/lib/jwt.ts`).
+4. **Data sync** — loads the hunter profile/settings; then routes to login, the awakening
+   assessment, or the tabs.
+
+(LvlUp has no maps, so the "hardware init" step is restoring device-local state — session +
+persisted theme — rather than GPS.)
+
+## Google SSO setup (optional)
+
+SSO is wired end to end but dormant until you supply OAuth client IDs:
+
+1. Google Cloud Console → APIs & Services → Credentials → create OAuth client IDs (Web + Android).
+2. Backend: set `Sso:Google:ClientId` (user secrets or `Sso__Google__ClientId` env var) to the
+   **web** client id — that's the audience the API verifies.
+3. Frontend: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` in
+   `frontend/.env.development` (see the commented template there). The "Continue with Google"
+   button appears once either is set.
 
 ## Running the frontend
 
@@ -208,6 +237,8 @@ an `errors` array. Authenticated routes need `Authorization: Bearer <token>`.
 | --- | --- | --- | --- |
 | POST | `/auth/register` | — | `{ email, password, name, surname, username }` → `{ token, hunterId }` |
 | POST | `/auth/login` | — | `{ email, password }` → `{ token, hunterId }` |
+| POST | `/auth/sso/google` | — | `{ idToken }` (Google ID token) → `{ token, hunterId }`; find-or-create by email, 401 if unverified |
+| GET | `/app/config` | — | `{ minimumVersion, latestVersion }` — boot-time version gate |
 | GET | `/hunters/me` | ✓ | Hunter status: names, displayName, level, XP, rank, five stats |
 | PUT | `/hunters/me/display-preference` | ✓ | `{ preference: "FullName" \| "Username" }` → 204 |
 | POST | `/hunters/me/assessment` | ✓ | `{ scores: { Strength: 1-5, … } }` (all 7) → starting stats + recommended difficulties; 409 if repeated or XP > 0 |

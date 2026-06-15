@@ -48,6 +48,18 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         });
 
+        services.AddOptions<GoogleSsoOptions>()
+            .Bind(configuration.GetSection(GoogleSsoOptions.SectionName));
+
+        GoogleSsoOptions googleSsoOptions =
+            configuration.GetSection(GoogleSsoOptions.SectionName).Get<GoogleSsoOptions>() ?? new GoogleSsoOptions();
+
+        services.AddHttpClient<IGoogleIdTokenVerifier, GoogleIdTokenVerifier>(client =>
+        {
+            client.BaseAddress = new Uri(googleSsoOptions.TokenInfoBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
+
         return services;
     }
 

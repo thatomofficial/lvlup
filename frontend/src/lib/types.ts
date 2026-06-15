@@ -59,6 +59,11 @@ export interface StarterPackResult {
   skippedCount: number;
 }
 
+export interface AppConfig {
+  minimumVersion: string;
+  latestVersion: string;
+}
+
 export type BadgeTier = 'Iron' | 'Steel' | 'Mythril' | 'Monarch';
 
 export interface Badge {

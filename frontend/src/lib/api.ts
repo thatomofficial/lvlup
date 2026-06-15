@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../constants/api';
 import type {
+  AppConfig,
   AssessmentResult,
   AssessmentScores,
   AuthResponse,
@@ -194,6 +195,17 @@ export const api = {
       method: 'POST',
       body: { email, password },
     });
+  },
+
+  loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    return request<AuthResponse>('/auth/sso/google', {
+      method: 'POST',
+      body: { idToken },
+    });
+  },
+
+  getAppConfig(): Promise<AppConfig> {
+    return request<AppConfig>('/app/config');
   },
 
   getMe(token: string): Promise<Hunter> {

@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 
 import { api, ApiError } from './api';
+import { isTokenExpired } from './jwt';
 import type { Hunter } from './types';
 
 const TOKEN_KEY = 'lvlup.token';
@@ -22,6 +23,7 @@ interface AuthContextValue {
   /** True while restoring the persisted session on app start. */
   isLoading: boolean;
   signIn(email: string, password: string): Promise<void>;
+  signInWithGoogle(idToken: string): Promise<void>;
   signUp(
     email: string,
     password: string,
@@ -55,6 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedToken = await AsyncStorage.getItem(TOKEN_KEY);
         if (!storedToken) {
+          return;
+        }
+        // Expired sessions are dropped locally - no wasted server round trip.
+        if (isTokenExpired(storedToken)) {
+          await AsyncStorage.multiRemove([TOKEN_KEY, HUNTER_ID_KEY]);
           return;
         }
         const me = await api.getMe(storedToken);
@@ -98,6 +105,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [establishSession],
   );
 
+  const signInWithGoogle = useCallback(
+    async (idToken: string) => {
+      const result = await api.loginWithGoogle(idToken);
+      await establishSession(result.token, result.hunterId);
+    },
+    [establishSession],
+  );
+
   const signUp = useCallback(
     async (
       email: string,
@@ -133,8 +148,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token, clearSession]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ token, hunter, isLoading, signIn, signUp, signOut, refreshHunter }),
-    [token, hunter, isLoading, signIn, signUp, signOut, refreshHunter],
+    () => ({
+      token,
+      hunter,
+      isLoading,
+      signIn,
+      signInWithGoogle,
+      signUp,
+      signOut,
+      refreshHunter,
+    }),
+    [token, hunter, isLoading, signIn, signInWithGoogle, signUp, signOut, refreshHunter],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

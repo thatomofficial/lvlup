@@ -28,6 +28,10 @@ public static class HunterErrors
         "Hunters.GitHubUsernameNotConfigured",
         "A GitHub username must be configured before completing GitHub-verified quests.");
 
+    public static readonly Error InvalidSsoToken = Error.Unauthorized(
+        "Hunters.InvalidSsoToken",
+        "The Google sign-in token could not be verified.");
+
     public static readonly Error InvalidCredentials = Error.Unauthorized(
         "Hunters.InvalidCredentials",
         "The provided credentials are invalid.");

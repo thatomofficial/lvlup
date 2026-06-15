@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using LvlUp.Api.Endpoints.App;
 using LvlUp.Api.Infrastructure;
 
 namespace LvlUp.Api;
@@ -9,6 +10,8 @@ public static class DependencyInjection
 
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
+        services.AddOptions<AppVersionOptions>().BindConfiguration(AppVersionOptions.SectionName);
+
         services.AddOpenApi();
 
         services.AddProblemDetails();
