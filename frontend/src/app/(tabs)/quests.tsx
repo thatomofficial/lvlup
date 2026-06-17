@@ -140,7 +140,6 @@ export default function QuestsScreen() {
     (quest: Quest) => {
       if (Platform.OS === 'web') {
         // Alert.alert buttons are not supported on web.
-        // eslint-disable-next-line no-alert
         if (typeof window !== 'undefined' && window.confirm(`Delete quest "${quest.title}"?`)) {
           void deleteQuest(quest);
         }

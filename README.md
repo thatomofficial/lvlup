@@ -157,8 +157,9 @@ npm start            # Expo dev server — press a (Android), i (iOS), w (web)
 ### Tests & checks
 
 ```powershell
-npm test             # Jest (29 tests)
-npm run typecheck    # tsc --noEmit
+npm test             # Jest
+npm run lint         # ESLint (eslint-config-expo, flat config)
+npm run typecheck    # tsc --noEmit (strict)
 ```
 
 ### Branding assets
