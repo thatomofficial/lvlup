@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Trash } from './icons';
 import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -53,7 +53,7 @@ export function QuestCard({
           onPress={() => onDelete(quest)}
           accessibilityLabel={`Delete quest ${quest.title}`}
         >
-          <Ionicons name="trash-outline" size={18} color={colors.textDim} />
+          <Trash size={18} color={colors.textDim} />
         </Pressable>
       </View>
 

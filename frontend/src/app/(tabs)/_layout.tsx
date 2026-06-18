@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
+import { ChartBar, Lightning, User } from '../../components/icons';
 import React from 'react';
 
 import { useAuth } from '../../lib/auth';
@@ -34,11 +34,7 @@ export default function TabsLayout() {
         options={{
           title: 'STATUS',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'stats-chart' : 'stats-chart-outline'}
-              size={size}
-              color={color}
-            />
+            <ChartBar size={size} color={color} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />
@@ -47,11 +43,7 @@ export default function TabsLayout() {
         options={{
           title: 'QUESTS',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'flash' : 'flash-outline'}
-              size={size}
-              color={color}
-            />
+            <Lightning size={size} color={color} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />
@@ -60,11 +52,7 @@ export default function TabsLayout() {
         options={{
           title: 'PROFILE',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={size}
-              color={color}
-            />
+            <User size={size} color={color} weight={focused ? 'fill' : 'regular'} />
           ),
         }}
       />

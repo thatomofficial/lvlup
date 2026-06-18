@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Plus } from '../../components/icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -171,7 +171,7 @@ export default function QuestsScreen() {
           style={styles.addButton}
           accessibilityLabel="Add quest"
         >
-          <Ionicons name="add" size={18} color={colors.background} />
+          <Plus size={18} color={colors.background} />
           <Text style={styles.addButtonText}>NEW</Text>
         </Pressable>
       </View>
@@ -219,7 +219,7 @@ export default function QuestsScreen() {
         style={styles.fab}
         accessibilityLabel="Add quest"
       >
-        <Ionicons name="add" size={30} color={colors.background} />
+        <Plus size={30} color={colors.background} />
       </Pressable>
 
       <CompleteQuestModal

@@ -37,7 +37,6 @@
           "backgroundColor": "#04060F"
         }
       ],
-      "expo-font",
       [
         "expo-image-picker",
         {

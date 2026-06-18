@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Camera, Hourglass, SignOut } from '../../components/icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -162,11 +162,11 @@ export default function ProfileScreen() {
                     </View>
                   )}
                   <View style={styles.avatarEditBadge}>
-                    <Ionicons
-                      name={uploadingAvatar ? 'hourglass-outline' : 'camera'}
-                      size={11}
-                      color={colors.background}
-                    />
+                    {uploadingAvatar ? (
+                      <Hourglass size={11} color={colors.background} />
+                    ) : (
+                      <Camera size={11} color={colors.background} />
+                    )}
                   </View>
                 </Pressable>
                 <View style={styles.identityInfo}>
@@ -293,7 +293,7 @@ export default function ProfileScreen() {
                 style={styles.logoutButton}
                 accessibilityLabel="Log out"
               >
-                <Ionicons name="log-out-outline" size={16} color={colors.danger} />
+                <SignOut size={16} color={colors.danger} />
                 <Text style={styles.logoutText}>LOG OUT</Text>
               </Pressable>
             </GlowPanel>
