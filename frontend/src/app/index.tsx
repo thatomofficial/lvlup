@@ -36,9 +36,11 @@ const INITIAL_BOOT: BootState = {
 };
 
 /**
- * Boot splash: runs the startup checks in sequence — network link, app
- * version, session restore (auth) and profile sync — then routes to login,
- * the awakening assessment, or the tabs.
+ * Boot splash: runs the startup checks — network link, app version, session
+ * restore (auth) and profile sync — silently in the background, then routes to
+ * login, the awakening assessment, or the tabs. The user only sees a minimal
+ * splash; UI is surfaced only when something needs them (offline, or a
+ * required update).
  */
 export default function BootScreen() {
   const router = useRouter();
@@ -49,7 +51,7 @@ export default function BootScreen() {
   const [boot, setBoot] = useState<BootState>(INITIAL_BOOT);
   const [attempt, setAttempt] = useState(0);
 
-  // Steps 1-2: network link, then version gate.
+  // Network link, then version gate — run in the background.
   useEffect(() => {
     let cancelled = false;
 
@@ -93,36 +95,24 @@ export default function BootScreen() {
     };
   }, [attempt]);
 
-  // Steps 3-4 derive from the auth context (session restore + profile sync).
-  const authStatus: StepStatus = authLoading ? 'running' : token ? 'ok' : 'skipped';
-  const syncStatus: StepStatus = authLoading
-    ? 'pending'
-    : !token
-      ? 'skipped'
-      : hunter
-        ? 'ok'
-        : 'failed';
-
+  // Auth (session restore + profile sync) resolves via the auth context.
   const checksDone =
     boot.network === 'ok' &&
     (boot.version === 'ok' || boot.version === 'skipped') &&
     !authLoading;
 
-  // Route once every gate has resolved (small delay so the window is readable).
+  // Route once every gate has resolved.
   useEffect(() => {
     if (!checksDone || boot.updateRequired) {
       return;
     }
-    const handle = setTimeout(() => {
-      if (!token) {
-        router.replace('/(auth)/login');
-        return;
-      }
-      const needsAssessment =
-        hunter !== null && !hunter.hasCompletedAssessment && hunter.totalXp === 0;
-      router.replace(needsAssessment ? '/assessment' : '/(tabs)');
-    }, 450);
-    return () => clearTimeout(handle);
+    if (!token) {
+      router.replace('/(auth)/login');
+      return;
+    }
+    const needsAssessment =
+      hunter !== null && !hunter.hasCompletedAssessment && hunter.totalXp === 0;
+    router.replace(needsAssessment ? '/assessment' : '/(tabs)');
   }, [checksDone, boot.updateRequired, token, hunter, router]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
@@ -131,61 +121,25 @@ export default function BootScreen() {
     <View style={styles.container}>
       <Image source={require('../assets/icon.png')} style={styles.logo} />
       <Text style={styles.title}>LVLUP</Text>
-      <Text style={styles.subtitle}>SYSTEM BOOT</Text>
-
-      <View style={styles.steps}>
-        <BootStep label="NETWORK LINK" status={boot.network} styles={styles} colors={colors} />
-        <BootStep label="SYSTEM VERSION" status={boot.version} styles={styles} colors={colors} />
-        <BootStep label="AUTHENTICATION" status={authStatus} styles={styles} colors={colors} />
-        <BootStep label="DATA SYNC" status={syncStatus} styles={styles} colors={colors} />
-      </View>
 
       {boot.offline ? (
         <View style={styles.actionArea}>
           <Text style={styles.notice}>NO ACTIVE CONNECTION DETECTED</Text>
           <NeonButton title="RETRY" onPress={retry} variant="outline" />
         </View>
-      ) : null}
-
-      {boot.updateRequired ? (
+      ) : boot.updateRequired ? (
         <View style={styles.actionArea}>
           <Text style={styles.notice}>
             A NEWER VERSION IS REQUIRED TO CONTINUE.{'\n'}UPDATE THE APP TO KEEP HUNTING.
           </Text>
         </View>
-      ) : null}
-    </View>
-  );
-}
-
-function BootStep({
-  label,
-  status,
-  styles,
-  colors,
-}: {
-  label: string;
-  status: StepStatus;
-  styles: ReturnType<typeof createStyles>;
-  colors: ThemeColors;
-}) {
-  const glyph =
-    status === 'ok' ? '✓' : status === 'failed' ? '✕' : status === 'skipped' ? '—' : null;
-  const glyphColor =
-    status === 'ok' ? colors.success : status === 'failed' ? colors.danger : colors.textDim;
-
-  return (
-    <View style={styles.stepRow}>
-      <View style={styles.stepGlyph}>
-        {status === 'running' ? (
-          <ActivityIndicator size="small" color={colors.primary} />
-        ) : (
-          <Text style={[styles.stepGlyphText, { color: glyphColor }]}>{glyph ?? '·'}</Text>
-        )}
-      </View>
-      <Text style={[styles.stepLabel, status === 'pending' && styles.stepLabelPending]}>
-        {label}
-      </Text>
+      ) : (
+        <ActivityIndicator
+          size="small"
+          color={colors.textDim}
+          style={styles.spinner}
+        />
+      )}
     </View>
   );
 }
@@ -214,43 +168,8 @@ const createStyles = (colors: ThemeColors) =>
       textShadowOffset: { width: 0, height: 0 },
       textShadowRadius: 14,
     },
-    subtitle: {
-      color: colors.textDim,
-      fontSize: 11,
-      letterSpacing: 4,
-      marginTop: 4,
-      marginBottom: 28,
-    },
-    steps: {
-      alignSelf: 'stretch',
-      maxWidth: 280,
-      width: '100%',
-      marginHorizontal: 'auto',
-      gap: 10,
-    },
-    stepRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      alignSelf: 'center',
-      width: 220,
-    },
-    stepGlyph: {
-      width: 20,
-      alignItems: 'center',
-    },
-    stepGlyphText: {
-      fontSize: 14,
-      fontWeight: '800',
-    },
-    stepLabel: {
-      color: colors.text,
-      fontSize: 12,
-      letterSpacing: 2,
-      fontWeight: '700',
-    },
-    stepLabelPending: {
-      color: colors.textDim,
+    spinner: {
+      marginTop: 28,
     },
     actionArea: {
       marginTop: 28,
