@@ -3,6 +3,7 @@ import { Link } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,6 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField } from '../../components/FormField';
 import { GlowPanel } from '../../components/GlowPanel';
 import { NeonButton } from '../../components/NeonButton';
+import {
+  BRAND_LOGO_SIZE,
+  BRAND_LOGO_TOP_PADDING,
+} from '../../constants/branding';
 import type { ThemeColors } from '../../constants/theme';
 import { ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
@@ -99,6 +104,11 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
+          <Image
+            source={require('../../assets/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.brand}>LVL{'↑'}UP</Text>
           <Text style={styles.tagline}>ARISE, HUNTER.</Text>
 
@@ -167,8 +177,16 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   scroll: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 24,
+    paddingTop: BRAND_LOGO_TOP_PADDING,
+    paddingBottom: 24,
+  },
+  logo: {
+    width: BRAND_LOGO_SIZE,
+    height: BRAND_LOGO_SIZE,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
   brand: {
     color: colors.primary,

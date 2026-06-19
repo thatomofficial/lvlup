@@ -1,16 +1,23 @@
 import Constants from 'expo-constants';
 import * as Network from 'expo-network';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
+  Animated,
+  Dimensions,
   Image,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NeonButton } from '../components/NeonButton';
+import {
+  BRAND_LOGO_SIZE,
+  BRAND_LOGO_SPLASH_SIZE,
+  BRAND_LOGO_TOP_PADDING,
+} from '../constants/branding';
 import type { ThemeColors } from '../constants/theme';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -35,21 +42,36 @@ const INITIAL_BOOT: BootState = {
   offline: false,
 };
 
+const START_SCALE = BRAND_LOGO_SPLASH_SIZE / BRAND_LOGO_SIZE;
+const FADE_IN_MS = 500;
+const MORPH_MS = 650;
+
 /**
  * Boot splash: runs the startup checks — network link, app version, session
- * restore (auth) and profile sync — silently in the background, then routes to
- * login, the awakening assessment, or the tabs. The user only sees a minimal
- * splash; UI is surfaced only when something needs them (offline, or a
- * required update).
+ * restore (auth) and profile sync — in the background, then morphs the logo
+ * from screen-centre down onto the login screen's logo slot before routing, a
+ * shared-element-style hand-off. UI is surfaced only when the user is needed
+ * (offline, or a required update).
  */
 export default function BootScreen() {
   const router = useRouter();
   const { token, hunter, isLoading: authLoading } = useAuth();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const screenH = Dimensions.get('window').height;
 
   const [boot, setBoot] = useState<BootState>(INITIAL_BOOT);
   const [attempt, setAttempt] = useState(0);
+
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(START_SCALE)).current;
+  const logoOffsetY = useRef(new Animated.Value(0)).current;
+  const morphStarted = useRef(false);
+
+  // Distance from screen-centre to where the login screen renders its logo.
+  const targetOffsetY =
+    insets.top + BRAND_LOGO_TOP_PADDING + BRAND_LOGO_SIZE / 2 - screenH / 2;
 
   // Network link, then version gate — run in the background.
   useEffect(() => {
@@ -101,45 +123,100 @@ export default function BootScreen() {
     (boot.version === 'ok' || boot.version === 'skipped') &&
     !authLoading;
 
-  // Route once every gate has resolved.
+  // Fade the logo in on mount.
   useEffect(() => {
-    if (!checksDone || boot.updateRequired) {
-      return;
-    }
-    if (!token) {
-      router.replace('/(auth)/login');
-      return;
-    }
-    const needsAssessment =
-      hunter !== null && !hunter.hasCompletedAssessment && hunter.totalXp === 0;
-    router.replace(needsAssessment ? '/assessment' : '/(tabs)');
-  }, [checksDone, boot.updateRequired, token, hunter, router]);
+    Animated.timing(logoOpacity, {
+      toValue: 1,
+      duration: FADE_IN_MS,
+      useNativeDriver: true,
+    }).start();
+  }, [logoOpacity]);
 
-  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  // Once every gate resolves, morph the logo onto the login slot, then route.
+  useEffect(() => {
+    if (!checksDone || boot.updateRequired || morphStarted.current) {
+      return;
+    }
+    morphStarted.current = true;
+
+    Animated.parallel([
+      Animated.timing(logoScale, {
+        toValue: 1,
+        duration: MORPH_MS,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoOffsetY, {
+        toValue: targetOffsetY,
+        duration: MORPH_MS,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (!finished) {
+        return;
+      }
+      if (!token) {
+        router.replace('/(auth)/login');
+      } else if (
+        hunter !== null &&
+        !hunter.hasCompletedAssessment &&
+        hunter.totalXp === 0
+      ) {
+        router.replace('/assessment');
+      } else {
+        router.replace('/(tabs)');
+      }
+    });
+  }, [
+    checksDone,
+    boot.updateRequired,
+    token,
+    hunter,
+    targetOffsetY,
+    logoScale,
+    logoOffsetY,
+    router,
+  ]);
+
+  const retry = useCallback(() => {
+    morphStarted.current = false;
+    setAttempt((n) => n + 1);
+  }, []);
+
+  if (boot.offline || boot.updateRequired) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={require('../assets/icon.png')}
+          style={styles.staticLogo}
+          resizeMode="contain"
+        />
+        <View style={styles.actionArea}>
+          <Text style={styles.notice}>
+            {boot.offline
+              ? 'NO ACTIVE CONNECTION DETECTED'
+              : 'A NEWER VERSION IS REQUIRED TO CONTINUE.\nUPDATE THE APP TO KEEP HUNTING.'}
+          </Text>
+          {boot.offline ? (
+            <NeonButton title="RETRY" onPress={retry} variant="outline" />
+          ) : null}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/icon.png')} style={styles.logo} />
-      <Text style={styles.title}>LVLUP</Text>
-
-      {boot.offline ? (
-        <View style={styles.actionArea}>
-          <Text style={styles.notice}>NO ACTIVE CONNECTION DETECTED</Text>
-          <NeonButton title="RETRY" onPress={retry} variant="outline" />
-        </View>
-      ) : boot.updateRequired ? (
-        <View style={styles.actionArea}>
-          <Text style={styles.notice}>
-            A NEWER VERSION IS REQUIRED TO CONTINUE.{'\n'}UPDATE THE APP TO KEEP HUNTING.
-          </Text>
-        </View>
-      ) : (
-        <ActivityIndicator
-          size="small"
-          color={colors.textDim}
-          style={styles.spinner}
-        />
-      )}
+      <Animated.Image
+        source={require('../assets/icon.png')}
+        resizeMode="contain"
+        style={[
+          styles.morphLogo,
+          {
+            opacity: logoOpacity,
+            transform: [{ translateY: logoOffsetY }, { scale: logoScale }],
+          },
+        ]}
+      />
     </View>
   );
 }
@@ -153,26 +230,16 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
       padding: 32,
     },
-    logo: {
-      width: 96,
-      height: 96,
-      borderRadius: 22,
+    morphLogo: {
+      width: BRAND_LOGO_SIZE,
+      height: BRAND_LOGO_SIZE,
     },
-    title: {
-      color: colors.primary,
-      fontSize: 24,
-      fontWeight: '900',
-      letterSpacing: 8,
-      marginTop: 16,
-      textShadowColor: colors.glow,
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 14,
-    },
-    spinner: {
-      marginTop: 28,
+    staticLogo: {
+      width: BRAND_LOGO_SIZE,
+      height: BRAND_LOGO_SIZE,
+      marginBottom: 24,
     },
     actionArea: {
-      marginTop: 28,
       alignSelf: 'stretch',
       gap: 12,
     },
