@@ -186,7 +186,7 @@ export default function BootScreen() {
     return (
       <View style={styles.container}>
         <Image
-          source={require('../assets/icon.png')}
+          source={require('../assets/splash-icon.png')}
           style={styles.staticLogo}
           resizeMode="contain"
         />
@@ -207,7 +207,7 @@ export default function BootScreen() {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require('../assets/icon.png')}
+        source={require('../assets/splash-icon.png')}
         resizeMode="contain"
         style={[
           styles.morphLogo,
